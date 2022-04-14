@@ -1,10 +1,40 @@
-# 🏗 scaffold-eth - Rarible Starter App
-
-> start building an NFT application using the Rarible Protocol! 🚀 
-
----
 
 
+# 🏗 Glip protocol
+
+- Create an ethereum compatible 12 word mnemonic and save into a new file /src/packages/hardhat/mnemonic.txt
+- Check balance on the deployer address
+```bash
+
+yarn account
+
+```
+- Fund the deployer ethereum address with ETH (on Ethereum), MATIC (on Polygon), MATIC (on Mumbai)... whatever is needed for deployment
+- Install dependencies
+```bash
+
+yarn start
+
+```
+- Compile 
+```bash
+
+yarn compile
+
+```
+- Deploy everything (AssetFactory, Minter, Auctioneer, Exchange, Forwarder)
+```bash
+
+yarn deploy-stack
+
+```
+- Other deployment scripts can be found in /src/packages/hardhat/scripts/
+
+
+
+
+___________________________________________
+# 🏗 Forked from scaffold-eth 
 #### [ 🏃‍♀️ Quick Start ](#quick-start)
 
 #### [🖼 Minting Your Collectibles](#mint-your-collectibles)
