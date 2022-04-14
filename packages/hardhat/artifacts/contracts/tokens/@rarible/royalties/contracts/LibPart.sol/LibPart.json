@@ -1,0 +1,37 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "LibPart",
+  "sourceName": "contracts/tokens/@rarible/royalties/contracts/LibPart.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "ARRAY_TYPE_HASH",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "TYPE_HASH",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x60de610025600b82828239805160001a60731461001857fe5b30600052607381538281f3fe7300000000000000000000000000000000000000003014608060405260043610603d5760003560e01c806364d4c819146042578063e5be627814605a575b600080fd5b60486060565b60408051918252519081900360200190f35b60486084565b7f397e04204c1e1a60ee8724b71f8244e10ab5f2e9009854d80f602bda21b59ebb81565b7fc47f55b2ccaa132215e1a46cd866072b6857ed1481ec6afc1909649fad4391348156fea264697066735822122000a6a07ba20dfbc9971f21e06729055eee178348e703a1ce4551dfa7ef061ed064736f6c63430007060033",
+  "deployedBytecode": "0x7300000000000000000000000000000000000000003014608060405260043610603d5760003560e01c806364d4c819146042578063e5be627814605a575b600080fd5b60486060565b60408051918252519081900360200190f35b60486084565b7f397e04204c1e1a60ee8724b71f8244e10ab5f2e9009854d80f602bda21b59ebb81565b7fc47f55b2ccaa132215e1a46cd866072b6857ed1481ec6afc1909649fad4391348156fea264697066735822122000a6a07ba20dfbc9971f21e06729055eee178348e703a1ce4551dfa7ef061ed064736f6c63430007060033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

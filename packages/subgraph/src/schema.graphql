@@ -1,0 +1,14 @@
+
+type MatchedOrder @entity {
+  id: ID!
+  bidMaker: String
+  bidTaker: String
+  auctionMaker: String
+  auctionTaker: String
+  auctioneer: String
+  minter: String
+  token: String
+  tokenId: BigInt
+  value: BigInt
+  auctionType: BigInt
+}

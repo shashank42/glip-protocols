@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "AuctionValidatorV2",
+  "sourceName": "contracts/exchange/AuctionValidatorV2.sol",
+  "abi": [],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea26469706673582212201ebbabd6f2b17571fd52a2dc9ec143558c87d4bb3bd157233d7b51ae99922cec64736f6c63430007060033",
+  "deployedBytecode": "0x6080604052600080fdfea26469706673582212201ebbabd6f2b17571fd52a2dc9ec143558c87d4bb3bd157233d7b51ae99922cec64736f6c63430007060033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

@@ -1,0 +1,105 @@
+specVersion: 0.0.2
+schema:
+  file: ./src/schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Auction
+    network: matic
+    source:
+      address: "0x187c2cbF294038184fea3C08D20A059e89E73217"
+      abi: Auction
+      startBlock: 24325000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - AuctionMatched
+        - BidMatched
+        - Deposit
+        - OwnershipTransferred
+        - Withdraw
+      abis:
+        - name: Auction
+          file: ./abis/Auction.json
+      eventHandlers:
+        - event: AuctionMatched(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleAuctionMatched
+        - event: BidMatched(indexed address,indexed address,indexed address,address,uint256,uint256)
+          handler: handleBidMatched
+      file: ./src/mapping.ts
+  - kind: ethereum
+    name: ERC721GlipLive
+    network: matic
+    source:
+      address: "0x4f4FeA2C2Da86dB1E6eB16b9092e63D322B77649"
+      abi: ERC721GlipLive
+      startBlock: 24325000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - CreateERC721GlipLive
+        - Creators
+        - DefaultApproval
+        - OwnershipTransferred
+        - Transfer
+      abis:
+        - name: ERC721GlipLive
+          file: ./abis/ERC721GlipLive.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: CreateERC721GlipLive(address,string,string)
+          handler: handleCreateERC721GlipLive
+        - event: Creators(uint256,(address,uint96)[])
+          handler: handleCreators
+        - event: DefaultApproval(indexed address,bool)
+          handler: handleDefaultApproval
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleAssetOwnershipTransferred
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/mapping.ts
+templates:
+  - kind: ethereum
+    name: ERC721Glip
+    network: matic
+    source:
+      abi: ERC721GlipLive
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - CreateERC721GlipLive
+        - Creators
+        - DefaultApproval
+        - OwnershipTransferred
+        - Transfer
+      abis:
+        - name: ERC721GlipLive
+          file: ./abis/ERC721GlipLive.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: CreateERC721GlipLive(address,string,string)
+          handler: handleCreateERC721GlipLive
+        - event: Creators(uint256,(address,uint96)[])
+          handler: handleCreators
+        - event: DefaultApproval(indexed address,bool)
+          handler: handleDefaultApproval
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleAssetOwnershipTransferred
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/mapping.ts

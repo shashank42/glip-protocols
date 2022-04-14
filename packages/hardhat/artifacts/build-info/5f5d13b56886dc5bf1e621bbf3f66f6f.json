@@ -1,0 +1,166 @@
+{
+  "id": "5f5d13b56886dc5bf1e621bbf3f66f6f",
+  "_format": "hh-sol-build-info-1",
+  "solcVersion": "0.7.6",
+  "solcLongVersion": "0.7.6+commit.7338295f",
+  "input": {
+    "language": "Solidity",
+    "sources": {
+      "contracts/exchange/IRoyaltyStaker.sol": {
+        "content": "\npragma solidity ^0.7.6;\npragma abicoder v2;\ninterface IRoyaltyStaker {\n    function recieveRoyalty() external payable;\n}\n"
+      }
+    },
+    "settings": {
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers"
+          ],
+          "": [
+            "ast"
+          ]
+        }
+      }
+    }
+  },
+  "output": {
+    "contracts": {
+      "contracts/exchange/IRoyaltyStaker.sol": {
+        "IRoyaltyStaker": {
+          "abi": [
+            {
+              "inputs": [],
+              "name": "recieveRoyalty",
+              "outputs": [],
+              "stateMutability": "payable",
+              "type": "function"
+            }
+          ],
+          "evm": {
+            "bytecode": {
+              "generatedSources": [],
+              "linkReferences": {},
+              "object": "",
+              "opcodes": "",
+              "sourceMap": ""
+            },
+            "deployedBytecode": {
+              "generatedSources": [],
+              "immutableReferences": {},
+              "linkReferences": {},
+              "object": "",
+              "opcodes": "",
+              "sourceMap": ""
+            },
+            "methodIdentifiers": {
+              "recieveRoyalty()": "7f75b53e"
+            }
+          }
+        }
+      }
+    },
+    "errors": [
+      {
+        "component": "general",
+        "errorCode": "1878",
+        "formattedMessage": "contracts/exchange/IRoyaltyStaker.sol: Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing \"SPDX-License-Identifier: <SPDX-License>\" to each source file. Use \"SPDX-License-Identifier: UNLICENSED\" for non-open-source code. Please see https://spdx.org for more information.\n",
+        "message": "SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing \"SPDX-License-Identifier: <SPDX-License>\" to each source file. Use \"SPDX-License-Identifier: UNLICENSED\" for non-open-source code. Please see https://spdx.org for more information.",
+        "severity": "warning",
+        "sourceLocation": {
+          "end": -1,
+          "file": "contracts/exchange/IRoyaltyStaker.sol",
+          "start": -1
+        },
+        "type": "Warning"
+      }
+    ],
+    "sources": {
+      "contracts/exchange/IRoyaltyStaker.sol": {
+        "ast": {
+          "absolutePath": "contracts/exchange/IRoyaltyStaker.sol",
+          "exportedSymbols": {
+            "IRoyaltyStaker": [
+              6
+            ]
+          },
+          "id": 7,
+          "nodeType": "SourceUnit",
+          "nodes": [
+            {
+              "id": 1,
+              "literals": [
+                "solidity",
+                "^",
+                "0.7",
+                ".6"
+              ],
+              "nodeType": "PragmaDirective",
+              "src": "1:23:0"
+            },
+            {
+              "id": 2,
+              "literals": [
+                "abicoder",
+                "v2"
+              ],
+              "nodeType": "PragmaDirective",
+              "src": "25:19:0"
+            },
+            {
+              "abstract": false,
+              "baseContracts": [],
+              "contractDependencies": [],
+              "contractKind": "interface",
+              "fullyImplemented": false,
+              "id": 6,
+              "linearizedBaseContracts": [
+                6
+              ],
+              "name": "IRoyaltyStaker",
+              "nodeType": "ContractDefinition",
+              "nodes": [
+                {
+                  "functionSelector": "7f75b53e",
+                  "id": 5,
+                  "implemented": false,
+                  "kind": "function",
+                  "modifiers": [],
+                  "name": "recieveRoyalty",
+                  "nodeType": "FunctionDefinition",
+                  "parameters": {
+                    "id": 3,
+                    "nodeType": "ParameterList",
+                    "parameters": [],
+                    "src": "99:2:0"
+                  },
+                  "returnParameters": {
+                    "id": 4,
+                    "nodeType": "ParameterList",
+                    "parameters": [],
+                    "src": "118:0:0"
+                  },
+                  "scope": 6,
+                  "src": "76:43:0",
+                  "stateMutability": "payable",
+                  "virtual": false,
+                  "visibility": "external"
+                }
+              ],
+              "scope": 7,
+              "src": "45:76:0"
+            }
+          ],
+          "src": "1:121:0"
+        },
+        "id": 0
+      }
+    }
+  }
+}
