@@ -2,7 +2,7 @@
 
 # 🏗 Glip protocol
 
-- Create an ethereum compatible 12 word mnemonic and save into a new file /src/packages/hardhat/mnemonic.txt
+- Create an ethereum compatible 12 word mnemonic and save into a new file packages/hardhat/mnemonic.txt
 - Check balance on the deployer address
 ```bash
 
@@ -28,7 +28,7 @@ yarn compile
 yarn deploy-stack
 
 ```
-- Other deployment scripts can be found in /src/packages/hardhat/scripts/
+- Other deployment scripts can be found in packages/hardhat/scripts/
 
 
 
