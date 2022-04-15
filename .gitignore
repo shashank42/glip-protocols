@@ -40,3 +40,8 @@ yarn-error.log*
 ## file
 **/mnemonic.txt
 mnemonic.txt*
+
+**/artifacts
+**/cache
+**/deployments
+**/.openzeppelin
