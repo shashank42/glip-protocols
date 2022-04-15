@@ -13,7 +13,7 @@ yarn account
 - Install dependencies
 ```bash
 
-yarn start
+yarn
 
 ```
 - Compile 
