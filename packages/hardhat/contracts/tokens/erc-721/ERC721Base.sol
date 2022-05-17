@@ -34,15 +34,16 @@ abstract contract ERC721Base is OwnableUpgradeable, ERC721DefaultApproval, ERC72
         _;
     }
 
-    /**
-     * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Can only be called by the current owner or the default approved address which is set at the time of deployment
-     * This is overridden to allow for safety of creators who misplace their private key
-     */
-    function transferOwnership(address newOwner) public virtual override(OwnableUpgradeable) onlyOwnerOrDefaultApproved {
-        require(newOwner != address(0), "Ownable: new owner is the zero address");
-        _setOwnership(newOwner);
-    }
+    // /**
+    //  * @dev Transfers ownership of the contract to a new account (`newOwner`).
+    //  * Can only be called by the current owner or the default approved address which is set at the time of deployment
+    //  * This is overridden to allow for safety of creators who misplace their private key
+    //  */
+    // function transferOwnership(address newOwner) public virtual override(OwnableUpgradeable) onlyOwnerOrDefaultApproved {
+    //     require(newOwner != address(0), "Ownable: new owner is the zero address");
+    //     _setOwnership(newOwner);
+    // }
+
 
     uint256[50] private __gap;
 }

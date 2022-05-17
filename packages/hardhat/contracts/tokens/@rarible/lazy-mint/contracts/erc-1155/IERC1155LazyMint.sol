@@ -13,14 +13,19 @@ interface IERC1155LazyMint is IERC1155Upgradeable {
         uint256 tokenId,
         uint256 value
     );
-    event Creators(
-        uint256 tokenId,
-        LibPart.Part[] creators
-    );
 
     function transferFromOrMint(
         LibERC1155LazyMint.Mint1155Data memory data,
         address from,
-        address to
-    ) external;
+        address to,
+        uint256 amount
+    ) external virtual;
+
+    function transferFromOrMintEncodedData(
+        bytes memory encoded,
+        address from,
+        address to,
+        uint256 amount
+    ) external virtual;
+
 }

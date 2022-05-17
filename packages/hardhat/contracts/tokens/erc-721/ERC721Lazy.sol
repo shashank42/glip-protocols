@@ -9,7 +9,7 @@ import "./../@rarible/lazy-mint/contracts/erc-721/IERC721LazyMint.sol";
 import "./Mint721Validator.sol";
 import "./ERC721Base.sol";
 import "./../../roles/IMinterUpgradeable.sol";
-import "./../../exchange/IGlipERC721LazyData.sol";
+import "./../../exchange/IMintSaleData.sol";
 
 import "./../@rarible/royalties/contracts/IERC2981.sol";
 
@@ -80,7 +80,7 @@ abstract contract ERC721Lazy is
         external
         view
         virtual
-        returns (IGlipERC721LazyData.DecodedMintData memory)
+        returns (IMintSaleData.DecodedMintData memory)
     {
         (address token, LibERC721LazyMint.Mint721Data memory data) = abi.decode(
             encoded,
@@ -98,7 +98,7 @@ abstract contract ERC721Lazy is
             }
             require(totalPayouts == 10000, "Payouts total");
 
-            return (IGlipERC721LazyData.DecodedMintData(
+            return (IMintSaleData.DecodedMintData(
                 data.tokenId,
                 data.reserve,
                 data.creator,
@@ -110,7 +110,7 @@ abstract contract ERC721Lazy is
             // LibPart.Part[] memory
             // If signed by someone else then fetch the data from minter contract
             (uint96 fee, LibPart.Part[] memory creators, bytes32 royaltySplitterBytes, LibPart.Part memory royaltiesSplitter) = IMinterUpgradeable(minter).getDetailsForMinting(token, data.creator, signer);
-            return (IGlipERC721LazyData.DecodedMintData(
+            return (IMintSaleData.DecodedMintData(
                 data.tokenId,
                 data.reserve,
                 data.creator,
@@ -160,10 +160,14 @@ abstract contract ERC721Lazy is
     execute mintAndTransfer function without knowing the lazy form 
     data structure
      */
-    function mintAndTransferEncodedData(bytes memory encoded, address to) external virtual {
+    function transferFromOrMintEncodedData(bytes memory encoded, address from, address to) external virtual override {
         (address token, LibERC721LazyMint.Mint721Data memory data) = abi.decode( encoded, (address, LibERC721LazyMint.Mint721Data));
         require(token == address(this), "Wrong contracts");
-        mintAndTransfer(data, to);
+        if (_exists(data.tokenId)) {
+            safeTransferFrom(from, to, data.tokenId);
+        } else {
+            mintAndTransfer(data, to);
+        }
     }
 
     // -------------------- THE MINTER --------------------------- //
@@ -178,7 +182,7 @@ abstract contract ERC721Lazy is
         // Verify if creator has allowed the minter
         bytes32 royaltySplitterBytes = IMinterUpgradeable(minter).getDetailsForRoyalty(address(this), data.creator, signer);
         
-        _safeMint(to, data.tokenId);
+        
         if (signer == data.creator) {
             // Accept creator defined royalty
             _saveCreatorSignedRoyalties(data.tokenId, data.creator, data.royalty );
@@ -187,8 +191,14 @@ abstract contract ERC721Lazy is
             _saveRoyalties(data.tokenId, royaltySplitterBytes);
         }
         _setTokenURI(data.tokenId, data.tokenURI);
-        emit Transfer(address(0), data.creator, data.tokenId);
-        emit Transfer(data.creator, to, data.tokenId);
+        _safeMint(to, data.tokenId);
+
+        if (data.creator != to) {
+            emit Transfer(address(0), data.creator, data.tokenId);
+            emit Transfer(data.creator, to, data.tokenId);
+        } else {
+            emit Transfer(address(0), data.creator, data.tokenId);
+        }
     }
 
     
@@ -219,7 +229,7 @@ abstract contract ERC721Lazy is
         if (royalty.value != 0 && royalty.account == address(0x0)) {
             royalty.account = address(_tokenId >> 96);
         } else if (royalty.value == 0 && royalty.account == address(0x0)) {
-            royalty = IMinterUpgradeable(minter).getSplitter(royaltySplitterBytesMap[_tokenId]);
+            royalty = IMinterUpgradeable(minter).getForwarder(royaltySplitterBytesMap[_tokenId]);
         }
         return (royalty.account, uint((_salePrice * royalty.value)/10000));
     }

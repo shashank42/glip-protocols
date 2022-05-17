@@ -9,14 +9,16 @@ import "./../../../royalties/contracts/LibPart.sol";
 
 interface IERC721LazyMint is IERC721Upgradeable {
 
-    event Creators(
-        uint256 tokenId,
-        LibPart.Part[] creators
-    );
-
     function transferFromOrMint(
         LibERC721LazyMint.Mint721Data memory data,
         address from,
         address to
     ) external;
+
+    function transferFromOrMintEncodedData(
+        bytes memory encoded, 
+        address from, 
+        address to
+    ) external;
+
 }

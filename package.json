@@ -76,8 +76,10 @@
 
     "deploy-pass": "yarn workspace @scaffold-eth/hardhat deploy-pass",
 
-    "deploy-open": "yarn workspace @scaffold-eth/hardhat deploy-open"
-  
+    "deploy-open": "yarn workspace @scaffold-eth/hardhat deploy-open",
+
+    "deploy-new-stack": "yarn workspace @scaffold-eth/hardhat deploy-new-stack"
+    
   },
   "workspaces": {
     "packages": [

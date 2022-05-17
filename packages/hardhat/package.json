@@ -26,6 +26,7 @@
     "chalk": "^4.1.0",
     "eth-sig-util": "^3.0.1",
     "ethereum-waffle": "^3.1.1",
+    "ethereumjs-util": "^7.1.4",
     "ethers": "5.3.0",
     "hardhat": "^2.0.11",
     "node-watch": "^0.7.0",
@@ -44,29 +45,22 @@
     "generate": "hardhat generate",
     "account": "hardhat account",
     "mint": "hardhat run scripts/mint.js",
-
     "deploy-payment-splitter": "hardhat run scripts/0-deployPaymentSplitter.js",
     "deploy-auctioneer": "hardhat run scripts/0-deployAuctioneer.js",
     "deploy-minter": "hardhat run scripts/1-deployMinter.js",
     "deploy-exchange": "hardhat run scripts/2-deployExchange.js",
-
     "deploy-token-beacon-and-proxy": "hardhat run scripts/7-deployTokenBeaconAndBeaconProxy.js",
     "deploy-tokens-factory": "hardhat run scripts/9-deployTokenFactory.js",
     "deploy-token-beacon-proxy": "hardhat run scripts/11-deployTokenBeaconProxy.js",
-
     "graph-publish": "hardhat run scripts/4-publish.js",
     "update-payout-royalty": "hardhat run scripts/8-updateCreatorPayoutAndRoyalty.js",
-
     "upgrade-exchange": "hardhat run scripts/6-upgradeExchange.js",
     "upgrade-token-beacon": "hardhat run scripts/10-upgradeBeacon.js",
-
     "deploy-tokens-no-proxy": "hardhat run scripts/5-deployTokensNoProxy.js",
     "deploy-tokens": "hardhat run scripts/3-deployTokens.js",
-
     "deploy-stack": "hardhat run scripts/12-deployStack.js",
-
     "deploy-pass": "hardhat run scripts/13-deployERC1155.js",
-
-    "deploy-open": "hardhat run scripts/14-deployERC1155OpenGlip.js"
+    "deploy-open": "hardhat run scripts/14-deployERC1155OpenGlip.js",
+    "deploy-new-stack": "hardhat run scripts/15-deployNewStack.js"
   }
 }

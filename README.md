@@ -1,6 +1,6 @@
 
-
-# 🏗 Glip protocol
+ 
+# 🏗 Glip protocol sad boy shanky
 
 - Create an ethereum compatible 12 word mnemonic and save into a new file packages/hardhat/mnemonic.txt
 - Check balance on the deployer address

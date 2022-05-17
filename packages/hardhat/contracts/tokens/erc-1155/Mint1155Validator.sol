@@ -6,8 +6,8 @@ import "../erc-1271/ERC1271Validator.sol";
 import "./../@rarible/lazy-mint/contracts/erc-1155/LibERC1155LazyMint.sol";
 
 contract Mint1155Validator is ERC1271Validator {
-    function __Mint1155Validator_init_unchained() internal initializer {
-        __EIP712_init_unchained("Mint1155", "1");
+    function __Mint1155Validator_init_unchained(string memory domain, string memory version) internal initializer {
+        __EIP712_init_unchained(domain, version);
     }
 
     function validate(address account, bytes32 hash, bytes memory signature) internal view returns(address) {

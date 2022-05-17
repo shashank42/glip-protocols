@@ -12,9 +12,11 @@ import "./IMinterUpgradeable.sol";
 import "./LibMinter.sol";
 import "./RolesValidator.sol";
 import "../tokens/@rarible/royalties/contracts/LibPart.sol";
-import "./../tokens/SplitPayments.sol";
+import "./../tokens/IRoyaltyForwarder.sol";
 
-contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IMinterUpgradeable, RolesValidator {
+import "./../meta-tx/ForwarderReceiverBase.sol";
+
+contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IMinterUpgradeable, RolesValidator, ForwarderReceiverBase {
 
     using LibSignature for bytes32;
     using AddressUpgradeable for address;
@@ -23,9 +25,9 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
     event MinDefaultMinterRoyalty(uint96 fee);
     event UpsertDefaultPayouts(address indexed token, address indexed creator, LibPart.Part[] creators, bool byOwner);
     event UpsertDefaultRoyalties(address indexed token, address indexed creator, bytes32 royaltyBytes, bool byOwner);
-    event NewSplitter(LibPart.Part[] payees, bytes32 splitterBytes, address indexed splitterAddress); // @todo find better word for depositBPS
+    event NewRoyaltyForwarder(LibPart.Part[] payees, bytes32 forwarderBytes, address indexed forwarderAddress);
     event RecievedRoyaltyPayment(address indexed from, uint256 amount);
-    event WithdrawStakedRoyalty(address indexed splitter, address indexed by, uint256 amount, LibPart.Part[] splits);
+    event WithdrawStakedRoyalty(address indexed forwarder, address indexed by, uint256 amount, LibPart.Part[] splits);
     event UpsertMinter(address indexed token, address indexed creator, address indexed minter, bool active, uint96 fee, uint256 cancelValue);
 
     struct Minter {
@@ -34,8 +36,8 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
         uint256 cancelValue;
         uint256 start;
         uint256 end;
-        LibPart.Part[] creators;    // No need to create splitter for creator payouts
-        bytes32 royalties;          // Creating a splitter to allow for EIP 2981
+        LibPart.Part[] creators;    // No need to create forwarder for creator payouts
+        bytes32 royalties;          // Creating a forwarder to allow for EIP 2981
     }
 
     struct DefaultMinter {
@@ -60,23 +62,23 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
     DefaultMinter[] public defaultsRegistry;
     Minter[] public mintersRegistry;
 
-    // To map created payment splitters with their definition, used for custom minters
-    address public splitterImplementationContract;
-    mapping (bytes32 => LibPart.Part) public splitters;
+    // To map created payment forwarders with their definition, used for custom minters
+    address public forwarderImplementationContract;
+    mapping (bytes32 => LibPart.Part) public forwarders;
 
-    // Maps splitter address to whom the staked amount should go to
-    mapping (address => LibPart.Part[]) public withdrawSplits;
+    // Maps forwarder address to whom the staked amount should go to
+    mapping (address => LibPart.Part[]) public forwarderSplits;
     // Overall percentage basis points excluding the minter contract
     mapping (address => uint96) public depositBPS;
 
-    // Mapping from creator to payment splitter for default royalties
+    // Mapping from creator to payment forwarder for default royalties
     mapping (address => mapping(address => LibPart.Part[] )) public defaultPayoutMapping;
-    mapping (address => mapping(address => bytes32)) public defaultRoyaltySplittersMapping;
+    mapping (address => mapping(address => bytes32)) public defaultRoyaltyForwardersMapping;
 
     // Minimum royalty for using the default signer
     uint96 public minDefaultMinterRoyalty;
 
-    function __MinterUpgradable_init (address _minter, uint96 _fee, uint96 _minDefaultMinterRoyalty, address _splitterImplementationContract ) public initializer {
+    function __MinterUpgradable_init (address _minter, uint96 _fee, uint96 _minDefaultMinterRoyalty, address _forwarderImplementationContract, address _forwarder ) public initializer {
         __Ownable_init();
         __ERC165_init_unchained();
         _registerInterface(ERC1271_INTERFACE_ID);
@@ -87,11 +89,16 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
 
         upsertDefaultMinter(_minter, _fee, true);
         setMinDefaultMinterRoyalty(_minDefaultMinterRoyalty);
-        setSplitterImplementationContract(_splitterImplementationContract);
+        setForwarderImplementationContract(_forwarderImplementationContract);
+        __ForwarderReceiverBase_init(_forwarder);
     }
 
-    function setSplitterImplementationContract(address _splitterImplementationContract) public onlyOwner {
-        splitterImplementationContract = _splitterImplementationContract;
+    function _msgSender() internal view virtual override(ForwarderReceiverBase, ContextUpgradeable) returns (address payable) {
+        return ForwarderReceiverBase._msgSender();
+    }
+
+    function setForwarderImplementationContract(address _forwarderImplementationContract) public onlyOwner {
+        forwarderImplementationContract = _forwarderImplementationContract;
     }
     
     function setMinDefaultMinterRoyalty(uint96 _minDefaultMinterRoyalty) public onlyOwner {
@@ -111,8 +118,8 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
         for (uint i = 0; i < data.creators.length; i++) {
             defaultPayoutMapping[data.token][data.creator].push(data.creators[i]);
         }
-        bytes32 royaltiesBytes = getOrCreateSplitterUsingSplit(data.royalties);
-        defaultRoyaltySplittersMapping[data.token][data.creator] = royaltiesBytes;
+        bytes32 royaltiesBytes = getOrCreateForwarderUsingSplit(data.royalties);
+        defaultRoyaltyForwardersMapping[data.token][data.creator] = royaltiesBytes;
 
         emit UpsertDefaultPayouts(data.token, data.creator, data.creators, true);
         emit UpsertDefaultRoyalties(data.token, data.creator, royaltiesBytes, true);
@@ -150,11 +157,11 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
             royalties[data.royalties.length].account = payable(address(this));
             royalties[data.royalties.length].value = minDefaultMinterRoyalty;
 
-            royaltiesBytes = getOrCreateSplitterUsingSplit(royalties);
-            defaultRoyaltySplittersMapping[data.token][data.creator] = royaltiesBytes;
+            royaltiesBytes = getOrCreateForwarderUsingSplit(royalties);
+            defaultRoyaltyForwardersMapping[data.token][data.creator] = royaltiesBytes;
         } else {
-            royaltiesBytes = getOrCreateSplitterUsingSplit(data.royalties);
-            defaultRoyaltySplittersMapping[data.token][data.creator] = royaltiesBytes;
+            royaltiesBytes = getOrCreateForwarderUsingSplit(data.royalties);
+            defaultRoyaltyForwardersMapping[data.token][data.creator] = royaltiesBytes;
         }
 
         emit UpsertDefaultPayouts(data.token, data.creator, data.creators, false);
@@ -169,24 +176,24 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
         return defaultsRegistry[defaults[_minter]].fee;
     }
 
-    function getOrCreateSplitterUsingSplit(LibPart.Part[] memory payees) internal virtual returns (bytes32){
+    function getOrCreateForwarderUsingSplit(LibPart.Part[] memory payees) internal virtual returns (bytes32){
 
-        address payable splitterAddress;
+        address payable forwarderAddress;
         uint96 totalValue;
-        bytes32 splitterBytes = LibPart.hashParts(payees);
+        bytes32 forwarderBytes = LibPart.hashParts(payees);
         if (payees.length == 1) {
             require(payees[0].account != address(0x0), "Recipient should be present");
             require(payees[0].value != 0, "Royalty value should be positive");
             require(payees[0].value < 10000, "Royalty total value should be < 10000");
 
-            splitters[splitterBytes] = LibPart.Part(payees[0].account, payees[0].value);
+            forwarders[forwarderBytes] = LibPart.Part(payees[0].account, payees[0].value);
 
         } else if ( payees.length > 0) {
-            splitterAddress = splitters[splitterBytes].account;
-            totalValue = splitters[splitterBytes].value;
+            forwarderAddress = forwarders[forwarderBytes].account;
+            totalValue = forwarders[forwarderBytes].value;
             
-            // Check if splitter is not already created
-            if (splitterAddress == address(0x0)){
+            // Check if forwarder is not already created
+            if (forwarderAddress == address(0x0)){
 
                 
                 for (uint i = 0; i < payees.length; i++) {
@@ -206,28 +213,28 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
                     }
                 }
 
-                splitterAddress = payable(ClonesUpgradeable.clone(splitterImplementationContract));
-                SplitPayments(splitterAddress).setMinterContract(address(this));
+                forwarderAddress = payable(ClonesUpgradeable.clone(forwarderImplementationContract));
+                IRoyaltyForwarder(forwarderAddress).__RoyaltyForwarder_init(address(this));
 
-                splitters[splitterBytes] = LibPart.Part(splitterAddress, totalValue);
-                depositBPS[splitterAddress] = _depositBPS;
+                forwarders[forwarderBytes] = LibPart.Part(forwarderAddress, totalValue);
+                depositBPS[forwarderAddress] = _depositBPS;
 
                 for (uint i = 0; i < payees.length; i++){
-                    withdrawSplits[splitterAddress].push(payees[i]);
+                    forwarderSplits[forwarderAddress].push(payees[i]);
                 }
 
-                emit NewSplitter(payees, splitterBytes, splitterAddress);
+                emit NewRoyaltyForwarder(payees, forwarderBytes, forwarderAddress);
 
             }
 
-            // return LibPart.Part(payable(splitter), totalValue);
+            // return LibPart.Part(payable(forwarder), totalValue);
         }
-
-        return splitterBytes;
+        return forwarderBytes;
+        
     }
 
     function recieveRoyaltyStake() external payable override {
-        require(depositBPS[_msgSender()] > 0, "Isn't a splitter address");
+        require(depositBPS[_msgSender()] > 0, "Isn't a forwarder address");
         // Stake the royalty users into their staked wallet address to be withdrawn when they want
         // The minterDefault's stake is just added to the contract balance
         stake[_msgSender()] += msg.value * depositBPS[_msgSender()] / 10000 ;
@@ -240,20 +247,47 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
         require(success, "Transfer failed.");
     }
 
-    function withdrawRoyaltyStake(bytes32 splitterBytes) external {
-        address splitterAddress = splitters[splitterBytes].account;
+    function withdrawRoyaltyStake(bytes32 forwarderBytes) external {
+        address forwarderAddress = forwarders[forwarderBytes].account;
         // Send the staked amounts to participants wallets
-        for (uint i = 0; i < withdrawSplits[splitterAddress].length; i++) {
-            if (withdrawSplits[splitterAddress][i].account != address(this)) {
-                (bool success, ) = withdrawSplits[splitterAddress][i].account.call{
-                value:(stake[splitterAddress] * withdrawSplits[splitterAddress][i].value ) / depositBPS[splitterAddress]
+        for (uint i = 0; i < forwarderSplits[forwarderAddress].length; i++) {
+            if (forwarderSplits[forwarderAddress][i].account != address(this)) {
+                (bool success, ) = forwarderSplits[forwarderAddress][i].account.call{
+                value:(stake[forwarderAddress] * forwarderSplits[forwarderAddress][i].value ) / depositBPS[forwarderAddress]
                 }("");
                 // require(success, "Transfer failed."); // If someone messed up, others shouldn't suffer
             }
         }
-        emit WithdrawStakedRoyalty(splitterAddress, _msgSender(), stake[splitterAddress], withdrawSplits[splitterAddress]);
-        delete stake[splitterAddress];
+        emit WithdrawStakedRoyalty(forwarderAddress, _msgSender(), stake[forwarderAddress], forwarderSplits[forwarderAddress]);
+        delete stake[forwarderAddress];
     }
+
+
+    function withdrawERC20Royalty(bytes32 forwarderBytes, address erc20TokenAddress) external {
+        address forwarderAddress = forwarders[forwarderBytes].account;
+        IRoyaltyForwarder(forwarderAddress).flushERC20Tokens(erc20TokenAddress);        
+    }
+
+
+    function withdrawERC721Royalty(bytes32 forwarderBytes, address erc721TokenAddress, uint256 erc721TokenId) external {
+        address forwarderAddress = forwarders[forwarderBytes].account;
+        IRoyaltyForwarder(forwarderAddress).flushERC721Token(erc721TokenAddress, erc721TokenId);
+    }
+
+
+    function withdrawERC1155Royalty(bytes32 forwarderBytes, address erc1155TokenAddress, uint256 erc1155TokenId) external {
+        address forwarderAddress = forwarders[forwarderBytes].account;
+        IRoyaltyForwarder(forwarderAddress).flushERC1155Tokens(erc1155TokenAddress, erc1155TokenId);
+    }
+
+    function callForwarder(bytes32 forwarderBytes, address target, uint256 value, bytes calldata data) external returns (bytes memory) {
+        address forwarderAddress = forwarders[forwarderBytes].account;
+        require(_msgSender() == forwarderSplits[forwarderAddress][0].account, "Forwarder caller should be first royalty recipient!");
+        (bool success, bytes memory returnedData) = IRoyaltyForwarder(forwarderAddress).callFromMinter(target, value, data);
+        require(success, 'Forwarder call execution failed');
+        return returnedData;
+    }
+
 
     function upsertMinter(address _token, LibMinter.Minter memory data) public virtual {
 
@@ -263,8 +297,8 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
         address signer = validate(data.minter, hash, data.signatures[0]);
         validate(data.creator, hash, data.signatures[1]);
 
-        // Creator is free to choose royalty split
-        bytes32 royalties = getOrCreateSplitterUsingSplit(data.royalties);
+        // Creator is free to choose royalty forwarder
+        bytes32 royalties = getOrCreateForwarderUsingSplit(data.royalties);
         minters[_token][data.creator][data.minter] = mintersRegistry.length;
 
         
@@ -307,8 +341,8 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
     function getDetailsForMinting(address _token, address _creator, address _signer) external view virtual override returns (
         uint96,                 // Minting fee
         LibPart.Part[] memory,  // Creators payouts
-        bytes32,                // Royalty splitter contract bytes to save
-        LibPart.Part memory     // Royalty splitter contract address and percentage basis points
+        bytes32,                // Royalty forwarder contract bytes to save
+        LibPart.Part memory     // Royalty forwarder contract address and percentage basis points
     ){
        
         if (_signer == _creator){
@@ -320,14 +354,14 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
 
                 return (0, 
                         creators, 
-                        defaultRoyaltySplittersMapping[_token][_creator], 
-                        splitters[defaultRoyaltySplittersMapping[_token][_creator]]);
+                        defaultRoyaltyForwardersMapping[_token][_creator], 
+                        forwarders[defaultRoyaltyForwardersMapping[_token][_creator]]);
             }
 
             return (0, 
                     defaultPayoutMapping[_token][_creator], 
-                    defaultRoyaltySplittersMapping[_token][_creator], 
-                    splitters[defaultRoyaltySplittersMapping[_token][_creator]]);
+                    defaultRoyaltyForwardersMapping[_token][_creator], 
+                    forwarders[defaultRoyaltyForwardersMapping[_token][_creator]]);
 
         } else if (mintersRegistry[minters[_token][_creator][_signer]].active) {
             
@@ -335,7 +369,7 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
             return (mintersRegistry[minters[_token][_creator][_signer]].fee, 
                     mintersRegistry[minters[_token][_creator][_signer]].creators, 
                     mintersRegistry[minters[_token][_creator][_signer]].royalties, 
-                    splitters[mintersRegistry[minters[_token][_creator][_signer]].royalties]);
+                    forwarders[mintersRegistry[minters[_token][_creator][_signer]].royalties]);
 
         } else if (defaultsRegistry[defaults[_signer]].active) {
 
@@ -347,39 +381,37 @@ contract MinterUpgradeable is ERC1271, OwnableUpgradeable, ERC165Upgradeable, IM
 
                 return (defaultsRegistry[defaults[_signer]].fee, 
                         creators, 
-                        defaultRoyaltySplittersMapping[_token][_creator], 
-                        splitters[defaultRoyaltySplittersMapping[_token][_creator]]);
+                        defaultRoyaltyForwardersMapping[_token][_creator], 
+                        forwarders[defaultRoyaltyForwardersMapping[_token][_creator]]);
             } 
 
             return (defaultsRegistry[defaults[_signer]].fee, 
                     defaultPayoutMapping[_token][_creator], 
-                    defaultRoyaltySplittersMapping[_token][_creator], 
-                    splitters[defaultRoyaltySplittersMapping[_token][_creator]]);
+                    defaultRoyaltyForwardersMapping[_token][_creator], 
+                    forwarders[defaultRoyaltyForwardersMapping[_token][_creator]]);
         }
         revert("Illegal minter");
     }
 
 
     function getDetailsForRoyalty(address _token, address _creator, address _signer) external view virtual override returns (
-        bytes32 // Splitter description bytes identifier for the wallet
+        bytes32 // Forwarder description bytes identifier for the wallet
     ){
         if (_signer == _creator){
-            return defaultRoyaltySplittersMapping[_token][_creator];
+            return defaultRoyaltyForwardersMapping[_token][_creator];
         } else if (mintersRegistry[minters[_token][_creator][_signer]].active) {
             return mintersRegistry[minters[_token][_creator][_signer]].royalties;
         } else if (defaultsRegistry[defaults[_signer]].active) {
-            return defaultRoyaltySplittersMapping[_token][_creator];
+            return defaultRoyaltyForwardersMapping[_token][_creator];
         }
         revert("Illegal minter");
     }
 
-    function getSplitter(bytes32 splitterBytes) external view override returns(LibPart.Part memory) {
-        return splitters[splitterBytes];
+    function getForwarder(bytes32 forwarderBytes) external view override returns(LibPart.Part memory) {
+        return forwarders[forwarderBytes];
     }
 
     
-
-
     /**
     * @dev Function must be implemented by deriving contract
     * @param _hash Arbitrary length data signed on the behalf of address(this)

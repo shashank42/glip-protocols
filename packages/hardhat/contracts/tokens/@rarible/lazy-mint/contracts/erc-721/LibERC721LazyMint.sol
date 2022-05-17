@@ -3,6 +3,7 @@
 pragma solidity >=0.6.2 <0.8.0;
 
 import "./../../../royalties/contracts/LibPart.sol";
+import "./../../../../../asset/contracts/LibAsset.sol";
 
 library LibERC721LazyMint {
     bytes4 public constant ERC721_LAZY_ASSET_CLASS =
@@ -11,7 +12,7 @@ library LibERC721LazyMint {
 
     struct Mint721Data {
         uint256 tokenId;
-        uint256 reserve;
+        LibAsset.Asset reserve;
         string tokenURI;
         address payable creator;
         address payable minter;
@@ -22,7 +23,7 @@ library LibERC721LazyMint {
 
     bytes32 public constant MINT_AND_TRANSFER_TYPEHASH =
         keccak256(
-            "Mint721(uint256 tokenId,uint256 reserve,string tokenURI,address creator,address minter,Part[] creators,Part royalty)Part(address account,uint96 value)"
+            "Mint721(uint256 tokenId,Asset reserve,string tokenURI,address creator,address minter,Part[] creators,Part royalty)Part(address account,uint96 value)Asset(AssetType assetType,uint256 value)AssetType(bytes4 assetClass,bytes data)"
         );
 
     function hash(Mint721Data memory data) internal pure returns (bytes32) {
@@ -36,7 +37,7 @@ library LibERC721LazyMint {
                 abi.encode(
                     MINT_AND_TRANSFER_TYPEHASH,
                     data.tokenId,
-                    data.reserve,
+                    LibAsset.hash(data.reserve),
                     keccak256(bytes(data.tokenURI)),
                     data.creator,
                     data.minter,

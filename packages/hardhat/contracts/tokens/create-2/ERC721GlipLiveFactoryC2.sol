@@ -3,7 +3,7 @@
 pragma solidity 0.7.6;
 pragma abicoder v2;
 
-import "../erc-721/ERC721GlipLive.sol";
+import "../meta-tokens/ERC721GlipLive.sol";
 import "./../@openzeppelin/contracts/proxy/UpgradeableBeacon.sol";
 import "./../@openzeppelin/contracts/proxy/BeaconProxy.sol";
 import "./../@openzeppelin/contracts/access/Ownable.sol";
@@ -16,19 +16,23 @@ import "./../@openzeppelin/contracts/access/Ownable.sol";
  */
 contract ERC721GlipLiveFactoryC2 is Ownable {
     address public beacon;
-    address exchangeProxy;
+    address transferProxy;
+    address lazyTransferProxy;
     address defaultMinter;
+    address forwarder;
 
     event ERC721GlipLiveProxy(address proxy, bool global, address indexed owner);
 
-    constructor(address _beacon, address _exchangeProxy, address _defaultMinter) {
+    constructor(address _beacon, address _transferProxy, address _lazyTransferProxy, address _defaultMinter, address _forwarder) {
         beacon = address(_beacon);
-        updateExchangeMinter(_exchangeProxy, _defaultMinter);
+        updateExchangeMinter(_transferProxy, _lazyTransferProxy, _defaultMinter, _forwarder);
     }
 
-    function updateExchangeMinter(address _exchangeProxy, address _defaultMinter ) public onlyOwner {
-        exchangeProxy = _exchangeProxy;
+    function updateExchangeMinter(address _transferProxy, address _lazyTransferProxy, address _defaultMinter, address _forwarder) public onlyOwner {
+        transferProxy = _transferProxy;
+        lazyTransferProxy = _lazyTransferProxy;
         defaultMinter = _defaultMinter;
+        forwarder = _forwarder;
     }
 
     function create(address to, string memory _name, string memory _symbol, bool _global, string memory baseURI, string memory contractURI, uint salt) external returns (address) {
@@ -77,7 +81,7 @@ contract ERC721GlipLiveFactoryC2 is Ownable {
     }
 
     function getData(string memory _name, string memory _symbol, bool _global, string memory baseURI, string memory contractURI) view internal returns(bytes memory){
-        return abi.encodeWithSelector(ERC721GlipLive(0).__ERC721GlipLive_init.selector,_name, _symbol, _global, baseURI, contractURI, exchangeProxy, defaultMinter);
+        return abi.encodeWithSelector(ERC721GlipLive(0).__ERC721GlipLive_init.selector,_name, _symbol, _global, baseURI, contractURI, transferProxy, lazyTransferProxy, defaultMinter, forwarder);
     }
 
 }

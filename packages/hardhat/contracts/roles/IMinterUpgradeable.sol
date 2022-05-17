@@ -16,7 +16,7 @@ interface IMinterUpgradeable {
         bytes32
     );
 
-    function getSplitter(bytes32 signature) external view returns(LibPart.Part memory);
+    function getForwarder(bytes32 signature) external view returns(LibPart.Part memory);
 
     function recieveRoyaltyStake() external payable;
 }

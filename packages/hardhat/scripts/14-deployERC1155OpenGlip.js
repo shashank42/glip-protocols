@@ -44,14 +44,14 @@ const main = async () => {
 //   var {proxy: minterProxy, impl: minterImpl} = await deployMinter ("MinterUpgradeable", contractArgs, overrides, {});
 
 //   MANUAL OVERRIDES
-// MUMBAI
-  const auctioneerProxy = "0x813232Ed6D1cb5F2339E23a4e4EA65fFec84ee27";
-  const minterProxy = "0xaE4E58Eab04df7e362a2F68Eb4eAa5762a1FC152";
+// // MUMBAI
+//   const auctioneerProxy = "0x813232Ed6D1cb5F2339E23a4e4EA65fFec84ee27";
+//   const minterProxy = "0xaE4E58Eab04df7e362a2F68Eb4eAa5762a1FC152";
   // const auctionProxy = "0xC272cB7ac9bcfB548B251a4F16fa0E4899d891aE";
 
   // MATIC
-  // const auctioneerProxy = "0x639b8386027928881A61281fF33eb17e3Ba5835F";
-  // const minterProxy = "0xc054f3B17C51b26378F8F948786A600D28bb66db";
+  const auctioneerProxy = "0x639b8386027928881A61281fF33eb17e3Ba5835F";
+  const minterProxy = "0xc054f3B17C51b26378F8F948786A600D28bb66db";
   // const auctionProxy = "0x4D7d215395b88738812b6201Eb5069b065b7CF53";
 
 
