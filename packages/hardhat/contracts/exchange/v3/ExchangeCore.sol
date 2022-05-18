@@ -138,10 +138,6 @@ abstract contract ExchangeCore is Initializable, OwnableUpgradeable, TransferExe
         validate(order, signature);
     }
 
-    function encodeOrderDataV1(LibOrderDataV1.DataV1 memory orderData) external pure returns (bytes memory data) {
-         data = LibOrderDataV1.encodeOrderDataV1(orderData);
-    }
-
     uint256[49] private __gap;
 
 }

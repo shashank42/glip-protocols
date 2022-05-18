@@ -18,8 +18,4 @@ library LibOrderDataV1 {
         orderData = abi.decode(data, (DataV1));
     }
 
-    function encodeOrderDataV1(DataV1 memory orderData) internal pure returns (bytes memory data) {
-         data = abi.encode(orderData);
-    }
-
 }

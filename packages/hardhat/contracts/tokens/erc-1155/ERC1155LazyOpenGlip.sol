@@ -3,9 +3,6 @@
 pragma solidity 0.7.6;
 pragma abicoder v2;
 
-import "hardhat/console.sol";
-
-
 import "./../@rarible/royalties/contracts/impl/RoyaltiesImpl.sol";
 import "./../@rarible/royalties-upgradeable/contracts/RoyaltiesUpgradeable.sol";
 import "./../@rarible/lazy-mint/contracts/erc-1155/IERC1155LazyMint.sol";
@@ -71,15 +68,6 @@ abstract contract ERC1155LazyOpenGlip is
     }
 
     // ------------- ENCODERS AND DECODERS FOR INTERNAL AND EXCHANGE CONTRACT ------ //
-
-    function hashMintData(LibERC1155LazyMint.Mint1155Data calldata data)
-        external
-        view
-        virtual
-        returns (bytes32)
-    {
-        return LibERC1155LazyMint.hash(data);
-    }
 
 
     /*

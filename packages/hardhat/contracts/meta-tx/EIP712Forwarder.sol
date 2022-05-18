@@ -1,3 +1,4 @@
+import "hardhat/console.sol";
 /* EIP-2585 Minimal Native Meta Transaction Forwarder
  * This standard defines a universal native meta transaction smart contract
  * that accept specially crafted Externally Owned Accounts (EOA) signed message
@@ -120,6 +121,8 @@ contract EIP712Forwarder is Forwarder, ReplayProtection {
         // optimization to avoid call if using default nonce strategy
         // this contract implements a default nonce strategy and can be called directly
         if (message.replayProtection == address(0) || message.replayProtection == address(this)) {
+            console.log(message.from);
+            console.logBytes(message.nonce);
             require(checkAndUpdateNonce(message.from, message.nonce), "NONCE_INVALID");
         } else {
             require(ReplayProtection(message.replayProtection).checkAndUpdateNonce(message.from, message.nonce), "NONCE_INVALID");
@@ -162,6 +165,11 @@ contract EIP712Forwarder is Forwarder, ReplayProtection {
         uint256 value = abi.decode(nonce, (uint256));
         uint128 batchId = uint128(value / 2**128);
         uint128 batchNonce = uint128(value % 2**128);
+
+        console.log(batchId);
+        console.log(batchNonce);
+
+        console.log(_batches[signer][batchId]);
 
         uint128 currentNonce = _batches[signer][batchId];
         if (batchNonce == currentNonce) {

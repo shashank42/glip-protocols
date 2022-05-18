@@ -103,10 +103,6 @@ abstract contract RaribleTransferManager is OwnableUpgradeable, ITransferManager
             request.transferDirection = TO_TAKER;
             request = getFinanceConfigByAssetType(request);
 
-            console.log("dataNft payouts");
-            console.log(request.dataNft.payouts.length);
-            console.log("dataCalculate payouts");
-            console.log(request.dataCalculate.payouts.length);
 
             // Left order maker to taker transfers + fees
             totalMakeValue = doTransfersWithFees(request);
@@ -336,10 +332,14 @@ abstract contract RaribleTransferManager is OwnableUpgradeable, ITransferManager
         LibAsset.AssetType memory temp;
         if (min.assetType.assetClass != 0){
             LibAsset.AssetType memory result = matchAssets(matchCalculate, min.assetType);
+            (address token2) = abi.decode(min.assetType.data, (address));
+            console.log("THIS IS THE DECODE");
+            (address token1) = abi.decode(matchCalculate.data, (address));
+            console.log(token1);
+            console.log(token2);
             if (result.assetClass == 0 || amount < min.value) {
                 // console.log(result.assetClass);
-                (address token1) = abi.decode(matchCalculate.data, (address));
-                console.log(token1);
+                
                 (address token2) = abi.decode(min.assetType.data, (address));
                 console.log(token2);
                 console.log(amount);
