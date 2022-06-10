@@ -1,3 +1,4 @@
+import "hardhat/console.sol";
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.7.6;
@@ -8,6 +9,7 @@ import "./../../tokens/@rarible/libraries/contracts/LibSignature.sol";
 import "./../../tokens/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "./../../tokens/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "./../../tokens/@openzeppelin/contracts-upgradeable/drafts/EIP712Upgradeable.sol";
+
 
 abstract contract OrderValidator is Initializable, ContextUpgradeable, EIP712Upgradeable {
     using LibSignature for bytes32;
@@ -33,6 +35,12 @@ abstract contract OrderValidator is Initializable, ContextUpgradeable, EIP712Upg
                 if (signature.length == 65) {
                     signer = _hashTypedDataV4(hash).recover(signature);
                 }
+                
+                console.log("Signer");
+                console.log(_msgSender());
+                console.log(signer);
+                console.log(order.maker);
+
                 if  (signer != order.maker) {
                     if (order.maker.isContract()) {
                         require(

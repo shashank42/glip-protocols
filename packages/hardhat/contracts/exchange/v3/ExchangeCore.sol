@@ -125,11 +125,11 @@ abstract contract ExchangeCore is Initializable, OwnableUpgradeable, TransferExe
 
         // @todo move this to asset matcher
         // @todo this ensures that the left and right order are exact matches. will fuck up for auctions.
-        uint valueLeftMake = orderLeft.makeAsset.value;
-        uint valueRightTake = orderRight.takeAsset.value;
-        uint valueLeftTake = orderLeft.takeAsset.value;
-        uint valueRightMake = orderRight.makeAsset.value;
-        require((valueLeftMake == valueRightTake) && (valueLeftTake == valueRightMake), "values don't match");
+        // uint valueLeftMake = orderLeft.makeAsset.value;
+        // uint valueRightTake = orderRight.takeAsset.value;
+        // uint valueLeftTake = orderLeft.takeAsset.value;
+        // uint valueRightMake = orderRight.makeAsset.value;
+        // require((valueLeftMake == valueRightTake) && (valueLeftTake == valueRightMake), "values don't match");
         
     }
 

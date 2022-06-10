@@ -1,3 +1,4 @@
+import "hardhat/console.sol";
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.7.6;
@@ -14,7 +15,7 @@ import "./lib/LibTransfer.sol";
 abstract contract TransferExecutor is Initializable, OwnableUpgradeable, ITransferExecutor {
     using LibTransfer for address;
 
-    mapping (bytes4 => address) proxies;
+    mapping (bytes4 => address) public proxies;
 
     event ProxyChange(bytes4 indexed assetType, address proxy);
 
@@ -36,6 +37,8 @@ abstract contract TransferExecutor is Initializable, OwnableUpgradeable, ITransf
         bytes4 transferDirection,
         bytes4 transferType
     ) internal override {
+        console.log("MAKE TRANSFER HAPPEN");
+        console.logBytes4(asset.assetType.assetClass);
         if (asset.assetType.assetClass == LibAsset.ETH_ASSET_CLASS) {
             to.transferEth(asset.value);
         } else if (asset.assetType.assetClass == LibAsset.ERC20_ASSET_CLASS) {
@@ -49,6 +52,9 @@ abstract contract TransferExecutor is Initializable, OwnableUpgradeable, ITransf
             (address token, uint tokenId) = abi.decode(asset.assetType.data, (address, uint256));
             INftTransferProxy(proxies[LibAsset.ERC1155_ASSET_CLASS]).erc1155safeTransferFrom(IERC1155Upgradeable(token), from, to, tokenId, asset.value, "");
         } else {
+            console.log("Type maybe lazy");
+            console.logBytes4(asset.assetType.assetClass);
+            console.log(proxies[asset.assetType.assetClass]);
             ITransferProxy(proxies[asset.assetType.assetClass]).transfer(asset, from, to);
         }
         emit Transfer(asset, from, to, transferDirection, transferType);

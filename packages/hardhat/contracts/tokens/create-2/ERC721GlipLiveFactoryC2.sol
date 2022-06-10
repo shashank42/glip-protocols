@@ -84,4 +84,6 @@ contract ERC721GlipLiveFactoryC2 is Ownable {
         return abi.encodeWithSelector(ERC721GlipLive(0).__ERC721GlipLive_init.selector,_name, _symbol, _global, baseURI, contractURI, transferProxy, lazyTransferProxy, defaultMinter, forwarder);
     }
 
+
+
 }

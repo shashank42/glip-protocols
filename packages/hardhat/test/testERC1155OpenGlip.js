@@ -93,7 +93,6 @@ describe("Test ERC1155 Open Glip Asset Contract", function () {
 
             await AssetContract.transferFromOrMintEncodedData(encodedMintData, (await ethers.getSigners())[0].address, (await ethers.getSigners())[3].address, 1);
 
-
             expect(await AssetContract.balanceOf((await ethers.getSigners())[3].address, 1)).to.equal(1);
 
         });
@@ -301,6 +300,9 @@ describe("Test ERC1155 Open Glip Asset Contract", function () {
 			// console.log("LEFT SIGNATURE DONE");
 
             // console.log()
+
+            console.log(left);
+            console.log(right);
 
             // Create order with make asset as 30 ERC20 tokens and take asset as 1 erc1155 asset token
             let tx = await Exchange.matchOrders(left, signatureLeft, right, signatureRight, { from: accounts[0].address });

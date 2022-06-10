@@ -26,10 +26,38 @@ const ethUtil = require('ethereumjs-util');
 const {defaultNetwork} = require("../hardhat.config");
 
 verificationLag = 100000;
+// verificationLag = 1;
 
 const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
+
+//   const deployed = {
+//     "deploymentTime": "12/05/2022",
+//     "eip712Forwarder": "0x17ED49532F6F00845afD7C450265739480e67c93",
+//     "erc20TransferProxy": "0xB2803975FB26C86555b2a7DD79D99C6A16995adE",
+//     "transferProxy": "0x164c868E888C7A996Daa7b729123eF8B60c9F660",
+//     "erc721GlipLazyMintTransferProxy": "0xa6c7A0c58e89FEed8A558779779e73561B5C010b",
+//     "erc1155GlipLazyMintTransferProxy": "0xE2B72D94e5373CE3304FFB3aaF01b374116399E9",
+//     "exchange": "0x877844098CaC36d1Cbd379997ce85F26717c1Ca2",
+//     "exchangeImplAddress": "0xB6C3DEA66d7F98514Eb27e4eE78012b040F97ea8",
+//     "royaltyForwarder": "0xDA93c4D10c3bC7fC68C11519dE79C2af4d86460a",
+//     "minterUpgradeable": "0xb697EFD82aBaEaDC5B9812a8Be7bED2e91642902",
+//     "minterUpgradeableImplAddress": "0x33cD715627992765eB27eCf329d83617830F3535",
+//     "erc721GlipLiveBeacon": "0x517297BE295e7B7d0bcfF5058a5B8c53fcBE1E42",
+//     "glipLiveBeaconImplAddress": "0x77CeeB9a2e6B912612883ddab26329A1e88Dcf5a",
+//     "erc1155GlipPassBeacon": "0xBFD3488c90dd517DdEdC13753b1f98b23D48E2C2",
+//     "glipPassBeaconImplAddress": "0xCfF72809D0A295fe6f5cE7BE6E065c316280D024",
+//     "erc1155OpenGlipBeacon": "0x1CA3610b42F316B933A5e0341d5fE9118af2F702",
+//     "openGlipBeaconImplAddress": "0x414Fd26a9c7bF5932200d015c06e70Df3d5FC24e",
+//     "erc721GlipLiveFactoryC2": "0x793b86Df97dccfda1EEBc842643A81AC6ce8D0A5",
+//     "GlipLive1Address": "0xB5D9A603d071923b5325B81b699AaA87cBf7A452",
+//     "erc1155GlipPassFactoryC2": "0xdeeeC8d49603eA4303bed5c08E8CAeeEE2211f41",
+//     "GlipPass1Address": "0x1038BE3987C8649cdd83D936cB60Fe5d52a61CE9",
+//     "erc1155OpenGlipFactoryC2": "0x2337f580a6ec70Eb9Ad0A1f94863611a4A748793",
+//     "OpenGlip1Address": "0xf4c4648a15e856C65865aCBB355B29811b27d5FF",
+//     "testERC20Address": "0xFC269941095f33996873543829a81563609a91ac"
+// }
 
 
   // 0. Deploy EIP712Forwarder forwarder
@@ -64,18 +92,17 @@ const main = async () => {
   await erc1155GlipLazyMintTransferProxy.__OperatorRole_init(overrides);
 
 
-    // const eipForwarderAddress = "0xfA683C78a5cA80568aC76969be4134Db7E4fc06F";
-    // const erc20ProxyAddrrss = "0x93c83c20Bf46E128997e3C28F9A30163d4d18406";
-    // const transferProxyAddress = "0x8E4e73c161Fe8d2731aC6C71B53156aEA11e345D";
-    // const erc721GlipLazyMintTransferProxyAddress = "0x999f2676f2232f05f14d59F4e4c2169fBF62b4eb";
-    // const erc1155GlipLazyMintTransferProxyAddress = "0x6210E87f94835c750a4b62DDE3912A2b78F456A2";
+//     // const eipForwarderAddress = "0xfA683C78a5cA80568aC76969be4134Db7E4fc06F";
+//     // const erc20ProxyAddrrss = "0x93c83c20Bf46E128997e3C28F9A30163d4d18406";
+//     // const transferProxyAddress = "0x8E4e73c161Fe8d2731aC6C71B53156aEA11e345D";
+//     // const erc721GlipLazyMintTransferProxyAddress = "0x999f2676f2232f05f14d59F4e4c2169fBF62b4eb";
+//     // const erc1155GlipLazyMintTransferProxyAddress = "0x6210E87f94835c750a4b62DDE3912A2b78F456A2";
 
 
   // 3. Deploy exchange with ERC20TransferProxy.address and TransferProxy.address and EIP712Forwarder.address in initializer
   const protocolFee = 100;
   const protocolFeeRecipient = "0xF1b6fceac6784a26360056973C41e0017DeE12e4";
   contractArgs = [transferProxy.address, erc20TransferProxy.address, protocolFee, protocolFeeRecipient, eip712Forwarder.address];
-//   contractArgs = [transferProxyAddress, erc20ProxyAddrrss, protocolFee, protocolFeeRecipient, eipForwarderAddress];
   var overrides = { initializer: '__Exchange_init', timeout: 0, unsafeAllow: ["delegatecall"] }; // gasLimit: 2500000, //  
   var {proxy: exchange, impl: exchangeImplAddress} = await deployProxy("Exchange", "contracts/exchange/v3/Exchange.sol:Exchange", contractArgs, overrides, {});
 
@@ -93,8 +120,11 @@ const main = async () => {
   await exchange.setTransferProxy(ERC721_LAZY, erc721GlipLazyMintTransferProxy.address, overrides);
   await exchange.setTransferProxy(ERC1155_LAZY, erc1155GlipLazyMintTransferProxy.address, overrides);
 
-//   await exchange.setTransferProxy(ERC721_LAZY, erc721GlipLazyMintTransferProxyAddress, overrides);
-//   await exchange.setTransferProxy(ERC1155_LAZY, erc1155GlipLazyMintTransferProxyAddress, overrides);
+  console.log("setTransferProxy : ERC1155_LAZY", await exchange.proxies(ERC1155_LAZY));
+  console.log("setTransferProxy : ERC721_LAZY", await exchange.proxies(ERC721_LAZY));
+
+  // await exchange.setTransferProxy(ERC721_LAZY, erc721GlipLazyMintTransferProxyAddress, overrides);
+  // await exchange.setTransferProxy(ERC1155_LAZY, erc1155GlipLazyMintTransferProxyAddress, overrides);
 
 
   // 6. Deploy RoyaltyForwarder implementation
@@ -121,17 +151,27 @@ const main = async () => {
   var  {beacon: erc721GlipLiveBeacon, beaconImpl: glipLiveBeaconImplAddress} = await deployTokenBeaconAndBeaconProxy("ERC721GlipLive", "contracts/tokens/meta-tokens/ERC721GlipLive.sol:ERC721GlipLive", assetContractOwnerAddress, contractArgs, overrides1, overrides2, {});
 
 
-
   overrides1 =  {timeout: 0, unsafeAllow: ["delegatecall"]}; // unsafeAllow: ["delegatecall"],
   overrides2 = { initializer: '__ERC1155GlipPass_init', timeout: 0, unsafeAllow: ["delegatecall"] };
   contractArgs = ["GlipPass", "GLP", false, "https://be.namasteapis.com/metadata/v1/pass/", "", transferProxy.address, erc1155GlipLazyMintTransferProxy.address, minterUpgradeable.address, eip712Forwarder.address];
   var  {beacon: erc1155GlipPassBeacon, beaconImpl: glipPassBeaconImplAddress} = await deployTokenBeaconAndBeaconProxy("ERC1155GlipPass", "contracts/tokens/meta-tokens/ERC1155GlipPass.sol:ERC1155GlipPass", assetContractOwnerAddress, contractArgs, overrides1, overrides2, {});
 
+  let transferProxyAddress = transferProxy.address;
+  let erc1155GlipLazyMintTransferProxyAddress = erc1155GlipLazyMintTransferProxy.address;
+  let minterUpgradeableAddress = minterUpgradeable.address;
+  let eip712ForwarderAddress = eip712Forwarder.address;
+
+  // Overrides from previous deployment
+  // let transferProxyAddress = deployed["transferProxy"];
+  // let erc1155GlipLazyMintTransferProxyAddress = deployed["erc1155GlipLazyMintTransferProxy"];
+  // let minterUpgradeableAddress = deployed["minterUpgradeable"];
+  // let eip712ForwarderAddress = deployed["eip712Forwarder"];
+
 
 
   overrides1 =  {timeout: 0, unsafeAllow: ["delegatecall"]}; // unsafeAllow: ["delegatecall"],
   overrides2 = { initializer: '__ERC1155OpenGlip_init', timeout: 0, unsafeAllow: ["delegatecall"] };
-  contractArgs = ["OpenGlip", "OGP", false, "https://be.namasteapis.com/metadata/v1/open/", "", transferProxy.address, erc1155GlipLazyMintTransferProxy.address, minterUpgradeable.address, eip712Forwarder.address];
+  contractArgs = ["OpenGlip", "OGP", false, "https://be.namasteapis.com/metadata/v1/open/", "", transferProxyAddress, erc1155GlipLazyMintTransferProxyAddress, minterUpgradeableAddress, eip712ForwarderAddress];
   var  {beacon: erc1155OpenGlipBeacon, beaconImpl: openGlipBeaconImplAddress} = await deployTokenBeaconAndBeaconProxy("ERC1155OpenGlip", "contracts/tokens/meta-tokens/ERC1155OpenGlip.sol:ERC1155OpenGlip", assetContractOwnerAddress, contractArgs, overrides1, overrides2, {});
 
 
@@ -156,7 +196,7 @@ const main = async () => {
   var GlipPass1Address = await erc1155GlipPassFactoryC2.getAddress(...addressArgs);
   console.log("Deployed GlipPass1 to : ", GlipPass1Address.toString());
 
-  contractArgs = [erc1155OpenGlipBeacon.address, transferProxy.address, erc1155GlipLazyMintTransferProxy.address, minterUpgradeable.address, eip712Forwarder.address];
+  contractArgs = [erc1155OpenGlipBeacon.address, transferProxyAddress, erc1155GlipLazyMintTransferProxyAddress, minterUpgradeableAddress, eip712ForwarderAddress];
   overrides = { gasLimit: 5000000 };
   var erc1155OpenGlipFactoryC2 = await deploy("ERC1155OpenGlipFactoryC2", "contracts/tokens/create-2/ERC1155OpenGlipFactoryC2.sol:ERC1155OpenGlipFactoryC2", contractArgs, overrides, {});
   addressArgs = ["OpenGlip", "OGP", false, "https://be.namasteapis.com/metadata/v1/open/", "", 0];
@@ -165,9 +205,15 @@ const main = async () => {
   var OpenGlip1Address = await erc1155OpenGlipFactoryC2.getAddress(...addressArgs);
   console.log("Deployed OpenGlip1 to : ", OpenGlip1Address.toString());
 
+  // let erc20TransferProxyAddress = "0x95401dc811bb5740090279Ba06cfA8fcF6113778";
+
+  // 10. Deploy test ERC20 coins
+  contractArgs = [erc20TransferProxy.address];
+  overrides = { gasLimit: 5000000 };
+  var testERC20 = await deploy("Test1ERC20", "contracts/tokens/Test1ERC20.sol:Test1ERC20", contractArgs, overrides, {});
+  console.log("Deployed TestERC20 to : ", testERC20.address);
 
   console.log();
-
 
   console.log(
     " 💾  Artifacts (address, abi, and args) saved to: ",
@@ -202,6 +248,7 @@ const main = async () => {
     GlipPass1Address: GlipPass1Address,
     erc1155OpenGlipFactoryC2: erc1155OpenGlipFactoryC2.address,
     OpenGlip1Address: OpenGlip1Address,
+    testERC20Address: testERC20.address
   }
 
   console.log(allContracts);
@@ -450,10 +497,15 @@ const deployTokenBeaconAndBeaconProxy = async (contractName, path, passContractO
 
 // ------ utils -------
 
-function id(str) {
-	// return `${ethers.utils.keccak256(ethers.utils.formatBytes32String(str)).toString("hex").substring(0, 10)}`;
-    // return `0x${ethUtil.keccak256(str).toString("hex").substring(0, 8)}`;
-    return `0x${ethUtil.keccak256(Buffer.from(str, 'hex') ).toString("hex").substring(0, 8)}`;
+// function id(str) {
+// 	// return `${ethers.utils.keccak256(ethers.utils.formatBytes32String(str)).toString("hex").substring(0, 10)}`;
+//     // return `0x${ethUtil.keccak256(str).toString("hex").substring(0, 8)}`;
+//     return `0x${ethUtil.keccak256(Buffer.from(str, 'hex') ).toString("hex").substring(0, 8)}`;
+// }
+
+const id = (str) => {
+	return ethers.utils.solidityKeccak256( ["string"] , [str] ).substring(0, 10);
+	// return `0x${ethUtil.keccak256(Buffer.from(str, 'hex')).toString("hex").substring(0, 8)}`;
 }
 
 function enc(token, tokenId) {

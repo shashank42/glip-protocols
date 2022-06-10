@@ -1,3 +1,4 @@
+import "hardhat/console.sol";
 // SPDX-License-Identifier: MIT
 
 pragma solidity >=0.6.9 <0.8.0;
@@ -14,6 +15,8 @@ contract ERC1155GlipLazyMintTransferProxy is OperatorRole, ITransferProxy {
     
     function transfer(LibAsset.Asset memory asset, address from, address to) override onlyOperator external {
         (address token, bytes memory data) = abi.decode(asset.assetType.data, (address, bytes));
+        console.log("Inside ERC1155GlipLazyMintTransferProxy");
+        console.log(token);
         IERC1155LazyMint(token).transferFromOrMintEncodedData(data, from, to, asset.value);
     }
 }
