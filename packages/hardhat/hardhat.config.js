@@ -22,7 +22,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = "mumbai";
+const defaultNetwork = "localhost";
 
 function mnemonic() {
   try {
@@ -46,6 +46,10 @@ module.exports = {
   networks: {
     localhost: {
       url: "http://localhost:8545",
+      allowUnlimitedContractSize: true,
+      gas: 8000000,
+      blockGasLimit: 0x1fffffffffffff,
+      timeout: 1800000
       /*
         notice no mnemonic here? it will just use account 0 of the hardhat node to deploy
         (you can put in a mnemonic here to set the deployer locally)

@@ -171,6 +171,8 @@ abstract contract ERC1155LazyOpenGlip is
         // Creator of the asset contract can implement any arbitrary signing logic
         bytes32 hash = LibERC1155LazyMint.hash(data);
 
+
+
         address signer = validate(data.minter, hash, data.signature);
 
         return signer;

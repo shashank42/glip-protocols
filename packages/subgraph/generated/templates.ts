@@ -6,14 +6,14 @@ import {
   DataSourceContext
 } from "@graphprotocol/graph-ts";
 
-export class ERC721Glip extends DataSourceTemplate {
+export class ERC1155OpenGlip extends DataSourceTemplate {
   static create(address: Address): void {
-    DataSourceTemplate.create("ERC721Glip", [address.toHex()]);
+    DataSourceTemplate.create("ERC1155OpenGlip", [address.toHex()]);
   }
 
   static createWithContext(address: Address, context: DataSourceContext): void {
     DataSourceTemplate.createWithContext(
-      "ERC721Glip",
+      "ERC1155OpenGlip",
       [address.toHex()],
       context
     );

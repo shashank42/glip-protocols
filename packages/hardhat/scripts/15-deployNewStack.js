@@ -25,39 +25,39 @@ const ethUtil = require('ethereumjs-util');
 
 const {defaultNetwork} = require("../hardhat.config");
 
-verificationLag = 100000;
-// verificationLag = 1;
+// verificationLag = 100000;
+verificationLag = 1;
 
 const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
-//   const deployed = {
-//     "deploymentTime": "12/05/2022",
-//     "eip712Forwarder": "0x17ED49532F6F00845afD7C450265739480e67c93",
-//     "erc20TransferProxy": "0xB2803975FB26C86555b2a7DD79D99C6A16995adE",
-//     "transferProxy": "0x164c868E888C7A996Daa7b729123eF8B60c9F660",
-//     "erc721GlipLazyMintTransferProxy": "0xa6c7A0c58e89FEed8A558779779e73561B5C010b",
-//     "erc1155GlipLazyMintTransferProxy": "0xE2B72D94e5373CE3304FFB3aaF01b374116399E9",
-//     "exchange": "0x877844098CaC36d1Cbd379997ce85F26717c1Ca2",
-//     "exchangeImplAddress": "0xB6C3DEA66d7F98514Eb27e4eE78012b040F97ea8",
-//     "royaltyForwarder": "0xDA93c4D10c3bC7fC68C11519dE79C2af4d86460a",
-//     "minterUpgradeable": "0xb697EFD82aBaEaDC5B9812a8Be7bED2e91642902",
-//     "minterUpgradeableImplAddress": "0x33cD715627992765eB27eCf329d83617830F3535",
-//     "erc721GlipLiveBeacon": "0x517297BE295e7B7d0bcfF5058a5B8c53fcBE1E42",
-//     "glipLiveBeaconImplAddress": "0x77CeeB9a2e6B912612883ddab26329A1e88Dcf5a",
-//     "erc1155GlipPassBeacon": "0xBFD3488c90dd517DdEdC13753b1f98b23D48E2C2",
-//     "glipPassBeaconImplAddress": "0xCfF72809D0A295fe6f5cE7BE6E065c316280D024",
-//     "erc1155OpenGlipBeacon": "0x1CA3610b42F316B933A5e0341d5fE9118af2F702",
-//     "openGlipBeaconImplAddress": "0x414Fd26a9c7bF5932200d015c06e70Df3d5FC24e",
-//     "erc721GlipLiveFactoryC2": "0x793b86Df97dccfda1EEBc842643A81AC6ce8D0A5",
-//     "GlipLive1Address": "0xB5D9A603d071923b5325B81b699AaA87cBf7A452",
-//     "erc1155GlipPassFactoryC2": "0xdeeeC8d49603eA4303bed5c08E8CAeeEE2211f41",
-//     "GlipPass1Address": "0x1038BE3987C8649cdd83D936cB60Fe5d52a61CE9",
-//     "erc1155OpenGlipFactoryC2": "0x2337f580a6ec70Eb9Ad0A1f94863611a4A748793",
-//     "OpenGlip1Address": "0xf4c4648a15e856C65865aCBB355B29811b27d5FF",
-//     "testERC20Address": "0xFC269941095f33996873543829a81563609a91ac"
-// }
+  const deployed = {
+    "deploymentTime": "12/05/2022",
+    "eip712Forwarder": "0x17ED49532F6F00845afD7C450265739480e67c93",
+    "erc20TransferProxy": "0xB2803975FB26C86555b2a7DD79D99C6A16995adE",
+    "transferProxy": "0x164c868E888C7A996Daa7b729123eF8B60c9F660",
+    "erc721GlipLazyMintTransferProxy": "0xa6c7A0c58e89FEed8A558779779e73561B5C010b",
+    "erc1155GlipLazyMintTransferProxy": "0xE2B72D94e5373CE3304FFB3aaF01b374116399E9",
+    "exchange": "0x877844098CaC36d1Cbd379997ce85F26717c1Ca2",
+    "exchangeImplAddress": "0xB6C3DEA66d7F98514Eb27e4eE78012b040F97ea8",
+    "royaltyForwarder": "0xDA93c4D10c3bC7fC68C11519dE79C2af4d86460a",
+    "minterUpgradeable": "0xb697EFD82aBaEaDC5B9812a8Be7bED2e91642902",
+    "minterUpgradeableImplAddress": "0x33cD715627992765eB27eCf329d83617830F3535",
+    "erc721GlipLiveBeacon": "0x517297BE295e7B7d0bcfF5058a5B8c53fcBE1E42",
+    "glipLiveBeaconImplAddress": "0x77CeeB9a2e6B912612883ddab26329A1e88Dcf5a",
+    "erc1155GlipPassBeacon": "0xBFD3488c90dd517DdEdC13753b1f98b23D48E2C2",
+    "glipPassBeaconImplAddress": "0xCfF72809D0A295fe6f5cE7BE6E065c316280D024",
+    "erc1155OpenGlipBeacon": "0x1CA3610b42F316B933A5e0341d5fE9118af2F702",
+    "openGlipBeaconImplAddress": "0x414Fd26a9c7bF5932200d015c06e70Df3d5FC24e",
+    "erc721GlipLiveFactoryC2": "0x793b86Df97dccfda1EEBc842643A81AC6ce8D0A5",
+    "GlipLive1Address": "0xB5D9A603d071923b5325B81b699AaA87cBf7A452",
+    "erc1155GlipPassFactoryC2": "0xdeeeC8d49603eA4303bed5c08E8CAeeEE2211f41",
+    "GlipPass1Address": "0x1038BE3987C8649cdd83D936cB60Fe5d52a61CE9",
+    "erc1155OpenGlipFactoryC2": "0x2337f580a6ec70Eb9Ad0A1f94863611a4A748793",
+    "OpenGlip1Address": "0xf4c4648a15e856C65865aCBB355B29811b27d5FF",
+    "testERC20Address": "0xFC269941095f33996873543829a81563609a91ac"
+}
 
 
   // 0. Deploy EIP712Forwarder forwarder
@@ -139,7 +139,7 @@ const main = async () => {
   const defaultMinterRoyalty = 0;
   contractArgs = [backendMinter, backendMintingFee, defaultMinterRoyalty, royaltyForwarder.address, eip712Forwarder.address];
   overrides = { initializer: '__MinterUpgradable_init', timeout: 0, unsafeAllow: ["delegatecall"] }; // gasLimit: 2500000, //  unsafeAllow: ["delegatecall"]
-  var {proxy: minterUpgradeable, impl: minterUpgradeableImplAddress} = await deployProxy("MinterUpgradeable", "contracts/roles/MinterUpgradeable.sol:MinterUpgradeable", contractArgs, overrides, {});
+  var {proxy: minterUpgradeable, impl: minterUpgradeableImplAddress} = await deployProxy("MinterUpgradeable", "contracts/roles/MinterUpgradeable.sol:MinterUpgradeable", contractArgs, overrides, {}, backendMinter);
 
 
 
@@ -205,10 +205,11 @@ const main = async () => {
   var OpenGlip1Address = await erc1155OpenGlipFactoryC2.getAddress(...addressArgs);
   console.log("Deployed OpenGlip1 to : ", OpenGlip1Address.toString());
 
-  // let erc20TransferProxyAddress = "0x95401dc811bb5740090279Ba06cfA8fcF6113778";
+  // let erc20TransferProxyAddress = "0xa95c86E6d24F4DD0102F9CF0C49ac09F609b01B2";
+  // let eip712ForwarderAddress = "0xf39437b4b42cC722FEA73A56945AC10a0B5e2337";
 
   // 10. Deploy test ERC20 coins
-  contractArgs = [erc20TransferProxy.address];
+  contractArgs = [erc20TransferProxy.address, eip712Forwarder.address];
   overrides = { gasLimit: 5000000 };
   var testERC20 = await deploy("Test1ERC20", "contracts/tokens/Test1ERC20.sol:Test1ERC20", contractArgs, overrides, {});
   console.log("Deployed TestERC20 to : ", testERC20.address);
@@ -260,7 +261,7 @@ const main = async () => {
 
 
 
-const deploy = async (contractName, path, _args = [], overrides = {}, libraries = {}) => {
+const deploy = async (contractName, path, _args = [], overrides = {}, libraries = {}, newOwner = null) => {
 
 
     while (true) {
@@ -304,6 +305,13 @@ const deploy = async (contractName, path, _args = [], overrides = {}, libraries 
             const cmdArgs = contractArgs.join(' ');
 
             await sleep(verificationLag);
+
+            if (newOwner) {
+              const tx = await box.transferOwnership(newOwner);
+              await tx.wait();
+              console.log("Transferred ownership to : ", newOwner);
+            }
+
             // Verifying contract
             console.log("Verifying contract");
             exec(`npx hardhat verify --contract ${path} --network ${defaultNetwork} ${box.address} ${cmdArgs}`, (error, stdout, stderr) => {
@@ -329,7 +337,7 @@ const deploy = async (contractName, path, _args = [], overrides = {}, libraries 
 }
 
 
-const deployProxy = async (contractName, path, _args = [], overrides = {}, libraries = {}) => {
+const deployProxy = async (contractName, path, _args = [], overrides = {}, libraries = {}, newOwner = null) => {
 
     while(true) {
 
@@ -379,7 +387,16 @@ const deployProxy = async (contractName, path, _args = [], overrides = {}, libra
             });
         
             await sleep(verificationLag);
+
+            if (newOwner) {
+              const tx = await box.transferOwnership(newOwner);
+              await tx.wait();
+              console.log("Transferred ownership to : ", newOwner);
+            }
+            
             console.log("Verifying contract");
+
+
 
         
             exec(`npx hardhat verify --contract ${path} --network ${defaultNetwork} ${implAddress}`, (error, stdout, stderr) => {

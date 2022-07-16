@@ -177,7 +177,7 @@ describe("Test ERC1155 Open Glip Asset Contract", function () {
 
             // let encDataLeft = await Exchange.encodeOrderDataV1(orderDataV1);
             // console.log("LEFT encodeOrderDataV1");
-            const left = Order(accounts[4].address,Asset(id("ERC20"), enc(ERC20TestCoin.address), 10000), ZERO, Asset(id("ERC1155"), enc(AssetContract.address, 1), 1), 1, 0, 0,  id("V1"), encDataLeft);
+            const left = Order(accounts[4].address,Asset(id("ERC20"), enc(ERC20TestCoin.address), 20000), ZERO, Asset(id("ERC1155"), enc(AssetContract.address, 1), 1), 1, 0, 0,  id("V1"), encDataLeft);
 
             // console.log("LEFT ORDER CREATED");
             let signatureLeft = await signOrder(left, accounts[4], Exchange.address);

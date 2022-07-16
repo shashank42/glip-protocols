@@ -1,0 +1,24 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "NoGetNonceTxTest",
+  "sourceName": "contracts/tokens/@rarible/meta-tx/test/contracts/NoGetNonceTxTest.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "getForce",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "force",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080604052348015600f57600080fd5b50608b8061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80636f9541eb14602d575b600080fd5b60336047565b604051603e9190604c565b60405180910390f35b600090565b9081526020019056fea2646970667358221220dc9541de4618f0944897b7d379728a8add8a1c0e182469d9dc5866a961dc84f064736f6c63430007060033",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c80636f9541eb14602d575b600080fd5b60336047565b604051603e9190604c565b60405180910390f35b600090565b9081526020019056fea2646970667358221220dc9541de4618f0944897b7d379728a8add8a1c0e182469d9dc5866a961dc84f064736f6c63430007060033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

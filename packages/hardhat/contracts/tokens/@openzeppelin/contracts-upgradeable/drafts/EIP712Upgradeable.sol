@@ -1,3 +1,4 @@
+// import "hardhat/console.sol";
 // SPDX-License-Identifier: MIT
 
 pragma solidity >=0.6.0 <0.8.0;
@@ -60,6 +61,24 @@ abstract contract EIP712Upgradeable is Initializable {
     }
 
     function _buildDomainSeparator(bytes32 typeHash, bytes32 name, bytes32 version) private view returns (bytes32) {
+
+        // console.log("typeHash");
+        // console.logBytes32(typeHash);
+        // console.log("Name");
+        // console.logBytes32(name);
+        // console.log("Version");
+        // console.logBytes32(version);
+
+        // console.logBytes32(keccak256(
+        //     abi.encode(
+        //         typeHash,
+        //         name,
+        //         version,
+        //         _getChainId(),
+        //         address(this)
+        //     )
+        // ));
+
         return keccak256(
             abi.encode(
                 typeHash,

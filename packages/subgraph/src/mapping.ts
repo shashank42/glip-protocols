@@ -1,206 +1,387 @@
+import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 import {
-  AuctionMatched,
-  BidMatched,
-  Deposit,
-  OwnershipTransferred,
-  Withdraw
-} from "../generated/Auction/Auction";
-import {
-  Approval,
-  ApprovalForAll,
-  CreateERC721GlipLive,
-  Creators,
-  DefaultApproval,
-  OwnershipTransferred as AssetOwnershipTransferred,
-  RoyaltiesSet,
-  Transfer
-} from "../generated/ERC721GlipLive/ERC721GlipLive";
-import { MatchedOrder } from "../generated/schema";
+  EIP721AndEIP1155,
+  URI,
+  Transfer,
+  Transfer1,
+  Transfer2,
+  Transfer3,
+  Transfer4,
+  Transfer5,
+  Transfer6,
+  Transfer7,
+  Transfer8,
+  TransferSingle,
+  TransferBatch
+} from "../generated/templates/ERC1155OpenGlip/EIP721AndEIP1155"
 
-export function handleAuctionMatched(event: AuctionMatched): void {
-  // Entities can be loaded from the store using a string ID; this ID
-  // needs to be unique across all entities of the same type
-  const mintedTokenId = event.params.tokenId.toHexString() + "-" + event.params.token.toHexString();
-  let entity = MatchedOrder.load(mintedTokenId);
+import {ERC1155OpenGlipProxy} from "../generated/erc1155OpenGlipFactoryC2/ERC1155OpenGlipFactoryC2"
+import {ERC1155OpenGlip} from "../generated/templates"
 
-  // Entities only exist after they have been saved to the store;
-  // `null` checks allow to create entities on demand
-  if (!entity) {
-    entity = new MatchedOrder(mintedTokenId)
 
-    // Entity fields can be set using simple assignments
-    // entity.count = BigInt.fromI32(0)
-  }
-  // BigInt and BigDecimal math are supported
-  entity.auctionMaker = event.params.maker.toHexString();
+import {Owner, OwnerTokenLookup, Token, TokenContract} from "../generated/schema"
+import { normalize } from "./helpers";
+const zeroAddress = "0x0000000000000000000000000000000000000000"
 
-  // Entity fields can be set based on event parameters
-  entity.auctionTaker = event.params.taker.toHexString();
-  entity.token = event.params.token.toHexString();
-  entity.tokenId = event.params.tokenId;
-  entity.auctionType = event.params.auctionType;
-
-  // Entities can be written to the store with `.save()`
-  entity.save();
-
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
-
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.auctioneer(...)
-  // - contract.getStake(...)
-  // - contract.onERC721Received(...)
-  // - contract.owner(...)
-  // - contract.platformFee(...)
-  // - contract.stake(...)
-  // - contract.verifyOrderMatch(...)
+export function handleURI(event: URI): void {
+  
 }
 
-export function handleBidMatched(event: BidMatched): void {
+export function handleNewProxy(event: ERC1155OpenGlipProxy): void {
 
-  // Entities can be loaded from the store using a string ID; this ID
-  // needs to be unique across all entities of the same type
-  const mintedTokenId = event.params.tokenId.toHexString() + "-" + event.params.token.toHexString();
-  let entity = MatchedOrder.load(mintedTokenId);
+  ERC1155OpenGlip.create(event.params.proxy);
 
-  // Entities only exist after they have been saved to the store;
-  // `null` checks allow to create entities on demand
-  if (!entity) {
-    entity = new MatchedOrder(mintedTokenId);
+}
 
-    // Entity fields can be set using simple assignments
-    // entity.count = BigInt.fromI32(0)
+export function handleTransfer(event: Transfer): void {
+  let tokenId = event.params.id;
+  let id = event.address.toHex() + '_' + tokenId.toString();
+  let contractId = event.address.toHex();
+
+  let contract = EIP721AndEIP1155.bind(event.address);
+  let tokenContract = TokenContract.load(contractId);
+  if(tokenContract == null) {
+    tokenContract = new TokenContract(contractId)
+    tokenContract.isLikelyERC1155 = false
+    let name = contract.try_name();
+    if(!name.reverted) {
+        tokenContract.name = normalize(name.value);
+    }
+    let symbol = contract.try_symbol();
+    if(!symbol.reverted) {
+        tokenContract.symbol = normalize(symbol.value);
+    }
+    tokenContract.save()
   }
 
+  let token = Token.load(id)
+  if(token == null){
+    token = new Token(id)
+    token.contract = tokenContract.id;
+    token.tokenID = tokenId;
+    token.mintTime = event.block.timestamp;
+    let metadataURI = contract.try_tokenURI(tokenId);
+    if(!metadataURI.reverted) {
+      token.tokenURI = normalize(metadataURI.value);
+    } else {
+      let metadataURI = contract.try_uri(tokenId);
+      if(!metadataURI.reverted) {
+        token.tokenURI = normalize(metadataURI.value);
+      } else {
+        token.tokenURI = "";
+      }
+    }
+    token.save()
+  }
 
-  // BigInt and BigDecimal math are supported
-  entity.bidMaker = event.params.maker.toHexString();
+  if(event.params.from!=Address.zero()){
+    log.warning("zero address",[])
 
-  // Entity fields can be set based on event parameters
-  entity.bidTaker = event.params.taker.toHexString();
-  entity.token = event.params.token.toHexString();
-  entity.tokenId = event.params.tokenId;
-  entity.auctioneer = event.params.auctioneer.toHexString();
-  entity.value = event.params.value;
+  let from = Owner.load(event.params.from.toHex())
+  if(from==null){
+    from = new Owner(event.params.from.toHex())
+    from.save()
+    }
 
-  // Entities can be written to the store with `.save()`
-  entity.save();
+  }
 
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
+  if(event.params.to!=Address.zero()){
+    let to = Owner.load(event.params.to.toHex())
+    if(to==null){
+      to = new Owner(event.params.to.toHex())
+      to.save()
+    }
+  }
+  handleLookupQuantity(contract,event.params.from,event.params.to,token,BigInt.fromI32(1))
 
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.auctioneer(...)
-  // - contract.getStake(...)
-  // - contract.onERC721Received(...)
-  // - contract.owner(...)
-  // - contract.platformFee(...)
-  // - contract.stake(...)
-  // - contract.verifyOrderMatch(...)
+  
+}
+
+export function handleTransfer1(event: Transfer1): void {
+  let tokenId = event.params._tokenId;
+  let id = event.address.toHex() + '_' + tokenId.toString();
+  let contractId = event.address.toHex();
+
+  let contract = EIP721AndEIP1155.bind(event.address);
+  let tokenContract = TokenContract.load(contractId);
+  if(tokenContract == null) {
+    tokenContract = new TokenContract(contractId)
+    tokenContract.isLikelyERC1155 = false
+    let name = contract.try_name();
+    if(!name.reverted) {
+        tokenContract.name = normalize(name.value);
+    }
+    let symbol = contract.try_symbol();
+    if(!symbol.reverted) {
+        tokenContract.symbol = normalize(symbol.value);
+    }
+    tokenContract.save()
+  }
+
+  let token = Token.load(id)
+  if(token == null){
+    token = new Token(id)
+    token.contract = tokenContract.id;
+    token.tokenID = tokenId;
+    token.mintTime = event.block.timestamp;
+    let metadataURI = contract.try_tokenURI(tokenId);
+    if(!metadataURI.reverted) {
+      token.tokenURI = normalize(metadataURI.value);
+    } else {
+      let metadataURI = contract.try_uri(tokenId);
+      if(!metadataURI.reverted) {
+        token.tokenURI = normalize(metadataURI.value);
+      } else {
+        token.tokenURI = "";
+      }
+    }
+    token.save()
+  }
+
+  if(event.params._from!=Address.zero()){
+    log.warning("zero address",[])
+
+  let from = Owner.load(event.params._from.toHex())
+  if(from==null){
+    from = new Owner(event.params._from.toHex())
+    from.save()
+    }
+
+  }
+
+  if(event.params._to!=Address.zero()){
+    let to = Owner.load(event.params._to.toHex())
+    if(to==null){
+      to = new Owner(event.params._to.toHex())
+      to.save()
+    }
+  }
+  handleLookupQuantity(contract,event.params._from,event.params._to,token,BigInt.fromI32(1))
 
 }
 
-export function handleDeposit(event: Deposit): void {}
+export function handleTransferSingle(event: TransferSingle): void {
+  let tokenId = event.params.id;
+  let id = event.address.toHex() + '_' + tokenId.toString();
+  let contractId = event.address.toHex();
 
-export function handleOwnershipTransferred(event: OwnershipTransferred): void {}
+  let contract = EIP721AndEIP1155.bind(event.address);
+  let tokenContract = TokenContract.load(contractId);
+  if(tokenContract == null) {
+    tokenContract = new TokenContract(contractId)
+    tokenContract.isLikelyERC1155 = false
+    let name = contract.try_name();
+    if(!name.reverted) {
+        tokenContract.name = normalize(name.value);
+    }
+    let symbol = contract.try_symbol();
+    if(!symbol.reverted) {
+        tokenContract.symbol = normalize(symbol.value);
+    }
+    tokenContract.save()
+  }
 
-export function handleWithdraw(event: Withdraw): void {}
+  let token = Token.load(id)
+  if(token == null){
+    token = new Token(id)
+    token.contract = tokenContract.id;
+    token.tokenID = tokenId;
+    token.mintTime = event.block.timestamp;
+    let metadataURI = contract.try_tokenURI(tokenId);
+    if(!metadataURI.reverted) {
+      token.tokenURI = normalize(metadataURI.value);
+    } else {
+      let metadataURI = contract.try_uri(tokenId);
+      if(!metadataURI.reverted) {
+        token.tokenURI = normalize(metadataURI.value);
+      } else {
+        token.tokenURI = "";
+      }
+    }
+    token.save()
+  }
+
+  if(event.params.from!=Address.zero()){
 
 
+    let from = Owner.load(event.params.from.toHex())
+    if(from==null){
+      from = new Owner(event.params.from.toHex())
+      from.save()
+      }
 
-export function handleApproval(event: Approval): void {
-  // // Entities can be loaded from the store using a string ID; this ID
-  // // needs to be unique across all entities of the same type
-  // let entity = ExampleEntity.load(event.transaction.from.toHex())
+  }
 
-  // // Entities only exist after they have been saved to the store;
-  // // `null` checks allow to create entities on demand
-  // if (!entity) {
-  //   entity = new ExampleEntity(event.transaction.from.toHex())
+  if(event.params.to!=Address.zero()){
+    let to = Owner.load(event.params.to.toHex())
+    if(to==null){
+      to = new Owner(event.params.to.toHex())
+      to.save()
+    }
+  }
 
-  //   // Entity fields can be set using simple assignments
-  //   entity.count = BigInt.fromI32(0)
-  // }
+  // Value of the transaction (generally null for single transfers, and X for minted.)
+  let value = event.params.value|| new BigInt(1);
 
-  // // BigInt and BigDecimal math are supported
-  // entity.count = entity.count + BigInt.fromI32(1)
+  handleLookupQuantity(contract,event.params.from,event.params.to,token,value)
 
-  // // Entity fields can be set based on event parameters
-  // entity.owner = event.params.owner
-  // entity.approved = event.params.approved
-
-  // // Entities can be written to the store with `.save()`
-  // entity.save()
-
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
-
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.balanceOf(...)
-  // - contract.baseURI(...)
-  // - contract.burned(...)
-  // - contract.contractURI(...)
-  // - contract.decodeLazyMintData(...)
-  // - contract.encodeLazyMintData(...)
-  // - contract.exists(...)
-  // - contract.getApproved(...)
-  // - contract.getCreators(...)
-  // - contract.getRaribleV2Royalties(...)
-  // - contract.isApprovedForAll(...)
-  // - contract.name(...)
-  // - contract.owner(...)
-  // - contract.ownerOf(...)
-  // - contract.supportsInterface(...)
-  // - contract.symbol(...)
-  // - contract.tokenByIndex(...)
-  // - contract.tokenOfOwnerByIndex(...)
-  // - contract.tokenURI(...)
-  // - contract.totalSupply(...)
 }
 
-export function handleApprovalForAll(event: ApprovalForAll): void {}
+export function handleTransferBatch(event: TransferBatch): void {
 
-export function handleCreateERC721GlipLive(event: CreateERC721GlipLive): void {}
+  let contractId = event.address.toHex();
+  
+  let contract = EIP721AndEIP1155.bind(event.address);
+  let tokenContract = TokenContract.load(contractId);
+  if(tokenContract == null) {
+    tokenContract = new TokenContract(contractId)
+    tokenContract.isLikelyERC1155 = false
+    let name = contract.try_name();
+    if(!name.reverted) {
+        tokenContract.name = normalize(name.value);
+    }
+    let symbol = contract.try_symbol();
+    if(!symbol.reverted) {
+        tokenContract.symbol = normalize(symbol.value);
+    }
+    tokenContract.save()
+  }
 
-export function handleCreators(event: Creators): void {}
+  // Grab the list of IDs in the transaction
+  let tokenIds = event.params.ids;
+  // Grab the quantities traded for each Ids.
+  let values = event.params.values;
 
-export function handleDefaultApproval(event: DefaultApproval): void {}
+  for (let index = 0; index < tokenIds.length; index++) {
+    // Token id
+    let token_id = tokenIds[index];
+    // ID of that collectible for the subgraph
+    let id = event.address.toHex() + '_' + token_id.toString();
+    // Quantity traded for that collectible
+    let q = values[index];
 
-export function handleAssetOwnershipTransferred(event: AssetOwnershipTransferred): void {}
+    log.info("index: {}, tokenID: {}, value: {}", [
+      index.toString(),
+      token_id.toString(),
+      q.toString(),
+    ]);
 
-export function handleRoyaltiesSet(event: RoyaltiesSet): void {}
+    let token = Token.load(id)
+    if(token == null){
+      token = new Token(id)
+      token.contract = tokenContract.id;
+      token.tokenID = token_id;
+      token.mintTime = event.block.timestamp;
+      let metadataURI = contract.try_tokenURI(token_id);
+      if(!metadataURI.reverted) {
+        token.tokenURI = normalize(metadataURI.value);
+      } else {
+        let metadataURI = contract.try_uri(token_id);
+        if(!metadataURI.reverted) {
+          token.tokenURI = normalize(metadataURI.value);
+        } else {
+          token.tokenURI = "";
+        }
+      }
+      token.save()
+    }
 
-export function handleTransfer(event: Transfer): void {}
+      handleLookupQuantity(contract,event.params.from,event.params.to,token,q)
+
+  }
+
+}
+
+
+
+function handleLookupQuantity(contract:EIP721AndEIP1155,from:Address,to:Address,token:Token,quantity:BigInt=BigInt.fromI32('1')):void{
+
+  let wasMinted: boolean = from.toHex() == "0x0000000000000000000000000000000000000000";
+
+  let isBurned: boolean = to.toHex() == "0x0000000000000000000000000000000000000000";
+
+  // If it was minted, the FROM address is the Zero address, therefore we don't create a lookup for it. (it won't work)
+  if (wasMinted == false) {
+    // I denote look-ups with the id `UserAddress:ContractAddress_tokenId`
+    let fromLookupId = from.toHex() + ":" + token.id;
+
+    let fromLookup = OwnerTokenLookup.load(fromLookupId);
+    if (fromLookup == null) {
+      // Lookup doesn't exist so we create a new one.
+      fromLookup = new OwnerTokenLookup(fromLookupId);
+      fromLookup.owner = from.toHex();
+      fromLookup.contract = token.contract;
+      fromLookup.token = token.id;
+      fromLookup.quantity = new BigInt(0);
+      fromLookup.save();
+    }
+
+    log.debug("Getting balance of from: {}", [from.toHex()]);
+
+    // We hit the contract of that collection and ask it how much the FROM user owns.
+    let balFrom = contract.try_balanceOf(from, token.tokenID);
+    if(balFrom.reverted){
+      balFrom = contract.try_balanceOf1(from);
+      if(balFrom.reverted){
+        balFrom = contract.try_balanceOf2(from);
+      }
+    }
+
+    if (!balFrom.reverted) {
+      // if contract responded, set the quantity FROM user owns.
+      fromLookup.quantity = balFrom.value;
+    } else if (fromLookup.quantity >= quantity) {
+      // if contract badly responded, we attempt to do simple math and remove the quantity sent.
+      let amount = fromLookup.quantity.toI32() - quantity.toI32();
+      fromLookup.quantity = new BigInt(amount);
+    } else {
+      // Else if the value sent is greater than previous quantity, we set it to 0.
+      fromLookup.quantity = new BigInt(0);
+    }
+    fromLookup.save();
+  }
+
+  // If it was burned, the TO address is the Zero address, therefore we dont'  create a lookup for it. (it won't work)
+  if (isBurned == false) {
+    // I denote look-ups with the id `UserAddress:contractAddress_tokenId`
+    let toLookupId = to.toHex() + ":" + token.id;
+    // to lookup handler
+    let toLookup = OwnerTokenLookup.load(toLookupId);
+    if (toLookup == null) {
+      toLookup = new OwnerTokenLookup(toLookupId);
+      toLookup.owner = to.toHex();
+      toLookup.contract = token.contract;
+      toLookup.token = token.id;
+      toLookup.quantity = new BigInt(0);
+      toLookup.save();
+    }
+
+    // This collectible was minted and sent to this user, therefore we know the user now owns the full value.
+    if (wasMinted) {
+      toLookup.quantity = quantity;
+    } else {
+      // Else, we hit the contract of this collectible's collection to know how much TO owns.
+      let balTo = contract.try_balanceOf(to, token.tokenID);
+      if(balTo.reverted){
+        balTo = contract.try_balanceOf1(to);
+        if(balTo.reverted){
+          balTo = contract.try_balanceOf2(to);
+        }
+      }
+      if (!balTo.reverted) {
+        // If replied nicely, we set the quantity that user owns for this collectible.
+        toLookup.quantity = balTo.value;
+      } else {
+        // if contract badly responded, we attempt to do simple math and add the quantity received.
+        let amount = toLookup.quantity.toI32() + quantity.toI32();
+        toLookup.quantity = new BigInt(amount);
+      }
+      //Check the quantity is valid:
+      // if (toLookup.quantity == null) {
+      //   toLookup.quantity = new BigInt(1);
+      // }
+    }
+
+    toLookup.save();
+  }
+}

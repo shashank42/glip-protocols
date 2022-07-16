@@ -37,7 +37,7 @@ contract ERC721GlipLive is ForwarderReceiverBase, ERC721Lazy {
         _setDefaultApproval(lazyTransferProxy, true);
     }
 
-     function _msgSender() internal view virtual override(ForwarderReceiverBase, ContextUpgradeable) returns (address payable) {
+    function _msgSender() internal view virtual override(ForwarderReceiverBase, ContextUpgradeable) returns (address payable) {
         return ForwarderReceiverBase._msgSender();
     }
 

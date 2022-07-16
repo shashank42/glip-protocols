@@ -3,75 +3,73 @@ schema:
   file: ./src/schema.graphql
 dataSources:
   - kind: ethereum
-    name: Auction
-    network: matic
+    name: erc1155OpenGlipFactoryC2
+    network: {{chain}}
     source:
-      address: "{{AuctionAddress}}"
-      abi: Auction
+      address: "{{erc1155OpenGlipFactoryC2}}"
+      abi: ERC1155OpenGlipFactoryC2
       startBlock: 24325000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - AuctionMatched
-        - BidMatched
-        - Deposit
-        - OwnershipTransferred
-        - Withdraw
+        - TokenContract
       abis:
-        - name: Auction
-          file: ./abis/Auction.json
+        - name: ERC1155OpenGlipFactoryC2
+          file: ./abis/tokens/create-2/ERC1155OpenGlipFactoryC2.sol/ERC1155OpenGlipFactoryC2.json
+        - name: ERC1155OpenGlip
+          file: ./abis/ERC1155OpenGlip.json
+        - name: EIP721AndEIP1155
+          file: ./abis/all.json
       eventHandlers:
-        - event: AuctionMatched(indexed address,indexed address,indexed address,uint256,uint256,uint256)
-          handler: handleAuctionMatched
-        - event: BidMatched(indexed address,indexed address,indexed address,address,uint256,uint256)
-          handler: handleBidMatched
+        - event: ERC1155OpenGlipProxy(address,indexed address)
+          handler: handleNewProxy
       file: ./src/mapping.ts
-  - kind: ethereum
-    name: ERC721GlipLive
-    network: matic
-    source:
-      address: "{{ERC721GlipLiveAddress}}"
-      abi: ERC721GlipLive
-      startBlock: 24325000
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.5
-      language: wasm/assemblyscript
-      entities:
-        - Approval
-        - ApprovalForAll
-        - CreateERC721GlipLive
-        - Creators
-        - DefaultApproval
-        - OwnershipTransferred
-        - Transfer
-      abis:
-        - name: ERC721GlipLive
-          file: ./abis/ERC721GlipLive.json
-      eventHandlers:
-        - event: Approval(indexed address,indexed address,indexed uint256)
-          handler: handleApproval
-        - event: ApprovalForAll(indexed address,indexed address,bool)
-          handler: handleApprovalForAll
-        - event: CreateERC721GlipLive(address,string,string)
-          handler: handleCreateERC721GlipLive
-        - event: Creators(uint256,(address,uint96)[])
-          handler: handleCreators
-        - event: DefaultApproval(indexed address,bool)
-          handler: handleDefaultApproval
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleAssetOwnershipTransferred
-        - event: Transfer(indexed address,indexed address,indexed uint256)
-          handler: handleTransfer
-      file: ./src/mapping.ts
+  # - kind: ethereum
+  #   name: ERC1155OpenGlip
+  #   network: matic
+  #   source:
+  #     address: "{{ERC721GlipLiveAddress}}"
+  #     abi: ERC721GlipLive
+  #     startBlock: 24325000
+  #   mapping:
+  #     kind: ethereum/events
+  #     apiVersion: 0.0.5
+  #     language: wasm/assemblyscript
+  #     entities:
+  #       - Approval
+  #       - ApprovalForAll
+  #       - CreateERC721GlipLive
+  #       - Creators
+  #       - DefaultApproval
+  #       - OwnershipTransferred
+  #       - Transfer
+  #     abis:
+  #       - name: ERC721GlipLive
+  #         file: ./abis/ERC721GlipLive.json
+  #     eventHandlers:
+  #       - event: Approval(indexed address,indexed address,indexed uint256)
+  #         handler: handleApproval
+  #       - event: ApprovalForAll(indexed address,indexed address,bool)
+  #         handler: handleApprovalForAll
+  #       - event: CreateERC721GlipLive(address,string,string)
+  #         handler: handleCreateERC721GlipLive
+  #       - event: Creators(uint256,(address,uint96)[])
+  #         handler: handleCreators
+  #       - event: DefaultApproval(indexed address,bool)
+  #         handler: handleDefaultApproval
+  #       - event: OwnershipTransferred(indexed address,indexed address)
+  #         handler: handleAssetOwnershipTransferred
+  #       - event: Transfer(indexed address,indexed address,indexed uint256)
+  #         handler: handleTransfer
+  #     file: ./src/mapping.ts
 templates:
   - kind: ethereum
-    name: ERC721Glip
-    network: matic
+    name: ERC1155OpenGlip
+    network: {{chain}}
     source:
-      abi: ERC721GlipLive
+      abi: EIP721AndEIP1155
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -79,27 +77,32 @@ templates:
       entities:
         - Approval
         - ApprovalForAll
-        - CreateERC721GlipLive
-        - Creators
-        - DefaultApproval
-        - OwnershipTransferred
+        - URI
         - Transfer
+        - Transfer1
+        - Transfer2
+        - Transfer3
+        - Transfer4
+        - Transfer5
+        - Transfer6
+        - Transfer7
+        - Transfer8
+        - TransferSingle
+        - TransferBatch
       abis:
-        - name: ERC721GlipLive
-          file: ./abis/ERC721GlipLive.json
+        - name: ERC1155OpenGlip
+          file: ./abis/ERC1155OpenGlip.json
+        - name: EIP721AndEIP1155
+          file: ./abis/all.json
       eventHandlers:
-        - event: Approval(indexed address,indexed address,indexed uint256)
-          handler: handleApproval
-        - event: ApprovalForAll(indexed address,indexed address,bool)
-          handler: handleApprovalForAll
-        - event: CreateERC721GlipLive(address,string,string)
-          handler: handleCreateERC721GlipLive
-        - event: Creators(uint256,(address,uint96)[])
-          handler: handleCreators
-        - event: DefaultApproval(indexed address,bool)
-          handler: handleDefaultApproval
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleAssetOwnershipTransferred
-        - event: Transfer(indexed address,indexed address,indexed uint256)
+        - event: URI(string,indexed uint256)
+          handler: handleURI
+        - event: Transfer(address,address,uint256)
           handler: handleTransfer
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer1
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleTransferSingle
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleTransferBatch
       file: ./src/mapping.ts

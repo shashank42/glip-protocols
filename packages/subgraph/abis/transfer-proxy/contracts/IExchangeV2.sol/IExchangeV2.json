@@ -1,0 +1,29 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IExchangeV2",
+  "sourceName": "contracts/transfer-proxy/contracts/IExchangeV2.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes4",
+          "name": "assetType",
+          "type": "bytes4"
+        },
+        {
+          "internalType": "address",
+          "name": "proxy",
+          "type": "address"
+        }
+      ],
+      "name": "setTransferProxy",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080604052348015600f57600080fd5b50609c8061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c806330c642f114602d575b600080fd5b606060048036036040811015604157600080fd5b5080356001600160e01b03191690602001356001600160a01b03166062565b005b505056fea26469706673582212204c287db8839a8fa03729e6a09c7092205933dd12b7992ed6784abb541be6897864736f6c63430007060033",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c806330c642f114602d575b600080fd5b606060048036036040811015604157600080fd5b5080356001600160e01b03191690602001356001600160a01b03166062565b005b505056fea26469706673582212204c287db8839a8fa03729e6a09c7092205933dd12b7992ed6784abb541be6897864736f6c63430007060033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

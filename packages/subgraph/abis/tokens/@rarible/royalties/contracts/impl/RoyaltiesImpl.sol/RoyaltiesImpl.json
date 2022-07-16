@@ -1,0 +1,61 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "RoyaltiesImpl",
+  "sourceName": "contracts/tokens/@rarible/royalties/contracts/impl/RoyaltiesImpl.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address payable",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "internalType": "uint96",
+              "name": "value",
+              "type": "uint96"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct LibPart.Part",
+          "name": "royalty",
+          "type": "tuple"
+        }
+      ],
+      "name": "SaveCreatorSignedRoyalty",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "royaltySplitterBytes",
+          "type": "bytes32"
+        }
+      ],
+      "name": "SaveRoyaltySplitter",
+      "type": "event"
+    }
+  ],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea26469706673582212201a70c55d5a777c5aec193dd8c0419f238e5de067183a96abb461b2d545025ebc64736f6c63430007060033",
+  "deployedBytecode": "0x6080604052600080fdfea26469706673582212201a70c55d5a777c5aec193dd8c0419f238e5de067183a96abb461b2d545025ebc64736f6c63430007060033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
