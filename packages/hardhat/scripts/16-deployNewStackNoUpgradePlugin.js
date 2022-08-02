@@ -16,7 +16,7 @@
 /* eslint no-use-before-define: "warn" */
 const fs = require("fs");
 const chalk = require("chalk");
-const { config, ethers, tenderly, run, upgrades } = require("hardhat");
+const { config, ethers, tenderly, run } = require("hardhat");
 const { utils } = require("ethers");
 const R = require("ramda");
 var path = require('path');
@@ -102,11 +102,15 @@ const main = async () => {
   // 3. Deploy exchange with ERC20TransferProxy.address and TransferProxy.address and EIP712Forwarder.address in initializer
   const protocolFee = 100;
   const protocolFeeRecipient = "0xF1b6fceac6784a26360056973C41e0017DeE12e4";
+  contractArgs = [];
+  overrides = { gasLimit: 5000000 };
+  // var {proxy: exchange, impl: exchangeImplAddress} = await deployProxy("Exchange", "contracts/exchange/v3/Exchange.sol:Exchange", contractArgs, overrides, {});
+  var exchange = await deploy("Exchange", "contracts/exchange/v3/Exchange.sol:Exchange", contractArgs, overrides, {});
+  var overrides = { gasLimit: 5000000 }; // gasLimit: 2500000, //  
   contractArgs = [deployed.transferProxy, deployed.erc20TransferProxy, protocolFee, protocolFeeRecipient, deployed.eip712Forwarder];
-  var overrides = { initializer: '__Exchange_init', timeout: 0, unsafeAllow: ["delegatecall"] }; // gasLimit: 2500000, //  
-  var {proxy: exchange, impl: exchangeImplAddress} = await deployProxy("Exchange", "contracts/exchange/v3/Exchange.sol:Exchange", contractArgs, overrides, {});
+  await exchange.__Exchange_init(...contractArgs, overrides);
   deployed.exchange = exchange.address;
-  deployed.exchangeImplAddress = exchangeImplAddress;
+  // deployed.exchangeImplAddress = exchangeImplAddress;
 
 
   // 4. Call addOperator on all proxies with exchange's address
@@ -138,36 +142,40 @@ const main = async () => {
   const backendMinter = "0xF1b6fceac6784a26360056973C41e0017DeE12e4";
   const backendMintingFee = 0;
   const defaultMinterRoyalty = 0;
+  contractArgs = [];
+  overrides = { gasLimit: 5000000 };
+  // var {proxy: minterUpgradeable, impl: minterUpgradeableImplAddress} = await deployProxy("MinterUpgradeable", "contracts/roles/MinterUpgradeable.sol:MinterUpgradeable", contractArgs, overrides, {}, backendMinter);
+  var minterUpgradeable = await deploy("MinterUpgradeable", "contracts/roles/MinterUpgradeable.sol:MinterUpgradeable", contractArgs, overrides, {});
   contractArgs = [backendMinter, backendMintingFee, defaultMinterRoyalty, deployed.royaltyForwarder, deployed.eip712Forwarder];
-  overrides = { initializer: '__MinterUpgradable_init', timeout: 0, unsafeAllow: ["delegatecall"] }; // gasLimit: 2500000, //  unsafeAllow: ["delegatecall"]
-  var {proxy: minterUpgradeable, impl: minterUpgradeableImplAddress} = await deployProxy("MinterUpgradeable", "contracts/roles/MinterUpgradeable.sol:MinterUpgradeable", contractArgs, overrides, {}, backendMinter);
+  overrides = { gasLimit: 5000000 };
+  minterUpgradeable.__MinterUpgradable_init(...contractArgs, overrides);
   deployed.minterUpgradeable = minterUpgradeable.address;
-  deployed.minterUpgradeableImplAddress = minterUpgradeableImplAddress;
+  // deployed.minterUpgradeableImplAddress = minterUpgradeableImplAddress;
 
 
 
-  // 8. Deploy ERC721GlipLive, ERC1155GlipPass and ERC1155OpenGlip beacons
+  // // 8. Deploy ERC721GlipLive, ERC1155GlipPass and ERC1155OpenGlip beacons
   const assetContractOwnerAddress = "0xF1b6fceac6784a26360056973C41e0017DeE12e4";
-  let overrides1 =  {timeout: 0, unsafeAllow: ["delegatecall"]}; // unsafeAllow: ["delegatecall"],
-  let overrides2 = { initializer: '__ERC721GlipLive_init', timeout: 0, unsafeAllow: ["delegatecall"] };
-  contractArgs = ["GlipLive", "GLV", false, "https://be.namasteapis.com/metadata/v1/live/", "", deployed.transferProxy, deployed.erc721GlipLazyMintTransferProxy, deployed.minterUpgradeable, deployed.eip712Forwarder];
-  var  {beacon: erc721GlipLiveBeacon, beaconImpl: glipLiveBeaconImplAddress} = await deployTokenBeaconAndBeaconProxy("ERC721GlipLive", "contracts/tokens/meta-tokens/ERC721GlipLive.sol:ERC721GlipLive", assetContractOwnerAddress, contractArgs, overrides1, overrides2, {});
-  deployed.erc721GlipLiveBeacon = erc721GlipLiveBeacon.address;
-  deployed.glipLiveBeaconImplAddress = glipLiveBeaconImplAddress;
+  // let overrides1 =  {timeout: 0, unsafeAllow: ["delegatecall"]}; // unsafeAllow: ["delegatecall"],
+  // let overrides2 = { initializer: '__ERC721GlipLive_init', timeout: 0, unsafeAllow: ["delegatecall"] };
+  // contractArgs = ["GlipLive", "GLV", false, "https://be.namasteapis.com/metadata/v1/live/", "", deployed.transferProxy, deployed.erc721GlipLazyMintTransferProxy, deployed.minterUpgradeable, deployed.eip712Forwarder];
+  // var  {beacon: erc721GlipLiveBeacon, beaconImpl: glipLiveBeaconImplAddress} = await deployTokenBeaconAndBeaconProxy("ERC721GlipLiveBeacon", "contracts/tokens/beacons/ERC721GlipLiveBeacon.sol:ERC721GlipLiveBeacon", "ERC721GlipLive", "contracts/tokens/meta-tokens/ERC721GlipLive.sol:ERC721GlipLive", assetContractOwnerAddress, contractArgs, overrides1, overrides2, {});
+  // deployed.erc721GlipLiveBeacon = erc721GlipLiveBeacon.address;
+  // deployed.glipLiveBeaconImplAddress = glipLiveBeaconImplAddress;
 
 
-  overrides1 =  {timeout: 0, unsafeAllow: ["delegatecall"]}; // unsafeAllow: ["delegatecall"],
-  overrides2 = { initializer: '__ERC1155GlipPass_init', timeout: 0, unsafeAllow: ["delegatecall"] };
-  contractArgs = ["GlipPass", "GLP", false, "https://be.namasteapis.com/metadata/v1/pass/", "", deployed.transferProxy, deployed.erc1155GlipLazyMintTransferProxy, deployed.minterUpgradeable, deployed.eip712Forwarder];
-  var  {beacon: erc1155GlipPassBeacon, beaconImpl: glipPassBeaconImplAddress} = await deployTokenBeaconAndBeaconProxy("ERC1155GlipPass", "contracts/tokens/meta-tokens/ERC1155GlipPass.sol:ERC1155GlipPass", assetContractOwnerAddress, contractArgs, overrides1, overrides2, {});
-  deployed.erc1155GlipPassBeacon = erc1155GlipPassBeacon.address;
-  deployed.glipPassBeaconImplAddress = glipPassBeaconImplAddress;
+  // overrides1 =  {timeout: 0, unsafeAllow: ["delegatecall"]}; // unsafeAllow: ["delegatecall"],
+  // overrides2 = { initializer: '__ERC1155GlipPass_init', timeout: 0, unsafeAllow: ["delegatecall"] };
+  // contractArgs = ["GlipPass", "GLP", false, "https://be.namasteapis.com/metadata/v1/pass/", "", deployed.transferProxy, deployed.erc1155GlipLazyMintTransferProxy, deployed.minterUpgradeable, deployed.eip712Forwarder];
+  // var  {beacon: erc1155GlipPassBeacon, beaconImpl: glipPassBeaconImplAddress} = await deployTokenBeaconAndBeaconProxy("ERC1155GlipPassBeacon", "contracts/tokens/beacons/ERC1155GlipPassBeacon.sol:ERC1155GlipPassBeacon", "ERC1155GlipPass", "contracts/tokens/meta-tokens/ERC1155GlipPass.sol:ERC1155GlipPass", assetContractOwnerAddress, contractArgs, overrides1, overrides2, {});
+  // deployed.erc1155GlipPassBeacon = erc1155GlipPassBeacon.address;
+  // deployed.glipPassBeaconImplAddress = glipPassBeaconImplAddress;
 
 
-  overrides1 =  {timeout: 0, unsafeAllow: ["delegatecall"]}; // unsafeAllow: ["delegatecall"],
-  overrides2 = { initializer: '__ERC1155OpenGlip_init', timeout: 0, unsafeAllow: ["delegatecall"] };
+  var overrides1 =  {gasLimit: 9400000}; // unsafeAllow: ["delegatecall"],
+  var overrides2 = { initializer: '__ERC1155OpenGlip_init', timeout: 0, unsafeAllow: ["delegatecall"] };
   contractArgs = ["OpenGlip", "OGP", false, "https://be.namasteapis.com/metadata/v1/open/", "", deployed.transferProxy, deployed.erc1155GlipLazyMintTransferProxy, deployed.minterUpgradeable, deployed.eip712Forwarder];
-  var  {beacon: erc1155OpenGlipBeacon, beaconImpl: openGlipBeaconImplAddress} = await deployTokenBeaconAndBeaconProxy("ERC1155OpenGlip", "contracts/tokens/meta-tokens/ERC1155OpenGlip.sol:ERC1155OpenGlip", assetContractOwnerAddress, contractArgs, overrides1, overrides2, {});
+  var  {beacon: erc1155OpenGlipBeacon, beaconImpl: openGlipBeaconImplAddress} = await deployTokenBeaconAndBeaconProxy("ERC1155OpenGlipBeacon", "contracts/tokens/beacons/ERC1155OpenGlipBeacon.sol:ERC1155OpenGlipBeacon", "ERC1155OpenGlip", "contracts/tokens/meta-tokens/ERC1155OpenGlip.sol:ERC1155OpenGlip", contractArgs, overrides1, overrides2, {});
   deployed.erc1155OpenGlipBeacon = erc1155OpenGlipBeacon.address;
   deployed.openGlipBeaconImplAddress = openGlipBeaconImplAddress;
 
@@ -175,28 +183,28 @@ const main = async () => {
 
   // 9. Deploy ERC721GlipLiveFactoryC2, ERC1155GlipPassFactoryC2 and ERC1155OpenGlipFactoryC2 with beacon, TransferProxy.address, ERC721GlipLazyMintTransferProxy/ERC1155GlipLazyMintTransferProxy.address, address MinterUpgradeable.address, RoyaltyForwarder.address
 
-  contractArgs = [deployed.erc721GlipLiveBeacon, deployed.transferProxy, deployed.erc721GlipLazyMintTransferProxy, deployed.minterUpgradeable, deployed.eip712Forwarder];
-  overrides = { gasLimit: 5000000 };
-  var erc721GlipLiveFactoryC2 = await deploy("ERC721GlipLiveFactoryC2", "contracts/tokens/create-2/ERC721GlipLiveFactoryC2.sol:ERC721GlipLiveFactoryC2", contractArgs, overrides, {});
-  deployed.erc721GlipLiveFactoryC2 = erc721GlipLiveFactoryC2.address;
+  // contractArgs = [deployed.erc721GlipLiveBeacon, deployed.transferProxy, deployed.erc721GlipLazyMintTransferProxy, deployed.minterUpgradeable, deployed.eip712Forwarder];
+  // overrides = { gasLimit: 5000000 };
+  // var erc721GlipLiveFactoryC2 = await deploy("ERC721GlipLiveFactoryC2", "contracts/tokens/create-2/ERC721GlipLiveFactoryC2.sol:ERC721GlipLiveFactoryC2", contractArgs, overrides, {});
+  // deployed.erc721GlipLiveFactoryC2 = erc721GlipLiveFactoryC2.address;
+  // addressArgs = ["GlipLive", "GLV", false, "https://be.namasteapis.com/metadata/v1/live/", "", 0];
+  // contractArgs = [assetContractOwnerAddress, ...addressArgs];
+  // await erc721GlipLiveFactoryC2.createToken(...contractArgs, overrides);
+  // var GlipLive1Address = await erc721GlipLiveFactoryC2.getAddress(...addressArgs);
+  // console.log("Deployed GlipLive1 to : ", GlipLive1Address.toString());
+  // deployed.GlipLive1Address = GlipLive1Address;
 
-  addressArgs = ["GlipLive", "GLV", false, "https://be.namasteapis.com/metadata/v1/live/", "", 0];
-  contractArgs = [assetContractOwnerAddress, ...addressArgs];
-  await erc721GlipLiveFactoryC2.createToken(...contractArgs, overrides);
-  var GlipLive1Address = await erc721GlipLiveFactoryC2.getAddress(...addressArgs);
-  console.log("Deployed GlipLive1 to : ", GlipLive1Address.toString());
-  deployed.GlipLive1Address = GlipLive1Address;
+  // contractArgs = [deployed.erc1155GlipPassBeacon, deployed.transferProxy, deployed.erc1155GlipLazyMintTransferProxy, deployed.minterUpgradeable, deployed.eip712Forwarder];
+  // overrides = { gasLimit: 5000000 };
+  // var erc1155GlipPassFactoryC2 = await deploy("ERC1155GlipPassFactoryC2", "contracts/tokens/create-2/ERC1155GlipPassFactoryC2.sol:ERC1155GlipPassFactoryC2", contractArgs, overrides, {});
+  // deployed.erc1155GlipPassFactoryC2 = erc1155GlipPassFactoryC2.address;
+  // addressArgs = ["GlipPass", "GLP", false, "https://be.namasteapis.com/metadata/v1/pass/", "", 0];
+  // contractArgs = [assetContractOwnerAddress, ...addressArgs];
+  // await erc1155GlipPassFactoryC2.createToken(...contractArgs, overrides);
+  // var GlipPass1Address = await erc1155GlipPassFactoryC2.getAddress(...addressArgs);
+  // console.log("Deployed GlipPass1 to : ", GlipPass1Address.toString());
+  // deployed.GlipPass1Address = GlipPass1Address;
 
-  contractArgs = [deployed.erc1155GlipPassBeacon, deployed.transferProxy, deployed.erc1155GlipLazyMintTransferProxy, deployed.minterUpgradeable, deployed.eip712Forwarder];
-  overrides = { gasLimit: 5000000 };
-  var erc1155GlipPassFactoryC2 = await deploy("ERC1155GlipPassFactoryC2", "contracts/tokens/create-2/ERC1155GlipPassFactoryC2.sol:ERC1155GlipPassFactoryC2", contractArgs, overrides, {});
-  deployed.erc1155GlipPassFactoryC2 = erc1155GlipPassFactoryC2.address;
-  addressArgs = ["GlipPass", "GLP", false, "https://be.namasteapis.com/metadata/v1/pass/", "", 0];
-  contractArgs = [assetContractOwnerAddress, ...addressArgs];
-  await erc1155GlipPassFactoryC2.createToken(...contractArgs, overrides);
-  var GlipPass1Address = await erc1155GlipPassFactoryC2.getAddress(...addressArgs);
-  console.log("Deployed GlipPass1 to : ", GlipPass1Address.toString());
-  deployed.GlipPass1Address = GlipPass1Address;
 
   contractArgs = [deployed.erc1155OpenGlipBeacon, deployed.transferProxy, deployed.erc1155GlipLazyMintTransferProxy, deployed.minterUpgradeable, deployed.eip712Forwarder];
   overrides = { gasLimit: 5000000 };
@@ -343,92 +351,92 @@ const deploy = async (contractName, path, _args = [], overrides = {}, libraries 
 }
 
 
-const deployProxy = async (contractName, path, _args = [], overrides = {}, libraries = {}, newOwner = null) => {
+// const deployProxy = async (contractName, path, _args = [], overrides = {}, libraries = {}, newOwner = null) => {
 
-    while(true) {
+//     while(true) {
 
-        try {
-            console.log(` 🛰  Deploying: ${contractName}`);
+//         try {
+//             console.log(` 🛰  Deploying: ${contractName}`);
     
-            let contractArgs = _args || [];
+//             let contractArgs = _args || [];
             
         
-            const Box = await ethers.getContractFactory(contractName);
-            const box = await upgrades.deployProxy(Box, contractArgs, overrides); // unsafeAllowCustomTypes:true
-            await box.deployed();
-            console.log("Box deployed to:", box.address);
+//             const Box = await ethers.getContractFactory(contractName);
+//             const box = await upgrades.deployProxy(Box, contractArgs, overrides); // unsafeAllowCustomTypes:true
+//             await box.deployed();
+//             console.log("Box deployed to:", box.address);
         
-            const deployed = box;
+//             const deployed = box;
 
 
-            const implAddress = await upgrades.erc1967.getImplementationAddress(box.address);
-            console.log("Implementation is here : ", implAddress);
+//             const implAddress = await upgrades.erc1967.getImplementationAddress(box.address);
+//             console.log("Implementation is here : ", implAddress);
         
-            writeFileRecursive(`artifacts/${defaultNetwork}/${contractName}.address`, deployed.address);
-            writeFileRecursive(`artifacts/${defaultNetwork}/${contractName}.impl.address`, implAddress);
+//             writeFileRecursive(`artifacts/${defaultNetwork}/${contractName}.address`, deployed.address);
+//             writeFileRecursive(`artifacts/${defaultNetwork}/${contractName}.impl.address`, implAddress);
         
-            let extraGasInfo = ""
-            var gasLimit;
-            if(deployed&&deployed.deployTransaction){
-            gasLimit = deployed.deployTransaction.gasLimit;
-            const gasUsed = deployed.deployTransaction.gasLimit.mul(deployed.deployTransaction.gasPrice)
-            extraGasInfo = `${utils.formatEther(gasUsed)} ETH, tx hash ${deployed.deployTransaction.hash}`
-            }
+//             let extraGasInfo = ""
+//             var gasLimit;
+//             if(deployed&&deployed.deployTransaction){
+//             gasLimit = deployed.deployTransaction.gasLimit;
+//             const gasUsed = deployed.deployTransaction.gasLimit.mul(deployed.deployTransaction.gasPrice)
+//             extraGasInfo = `${utils.formatEther(gasUsed)} ETH, tx hash ${deployed.deployTransaction.hash}`
+//             }
         
-            console.log(
-            " 📄",
-            chalk.cyan(contractName),
-            "deployed to:",
-            chalk.magenta(deployed.address)
-            );
-            console.log(
-            " ⛽",
-            chalk.grey(extraGasInfo)
-            );
-            console.log(" GAS units : ", gasLimit.toNumber());
+//             console.log(
+//             " 📄",
+//             chalk.cyan(contractName),
+//             "deployed to:",
+//             chalk.magenta(deployed.address)
+//             );
+//             console.log(
+//             " ⛽",
+//             chalk.grey(extraGasInfo)
+//             );
+//             console.log(" GAS units : ", gasLimit.toNumber());
         
-            await tenderly.persistArtifacts({
-            name: contractName,
-            address: deployed.address
-            });
+//             await tenderly.persistArtifacts({
+//             name: contractName,
+//             address: deployed.address
+//             });
         
-            await sleep(verificationLag);
+//             await sleep(verificationLag);
 
-            if (newOwner) {
-              const tx = await box.transferOwnership(newOwner);
-              await tx.wait();
-              console.log("Transferred ownership to : ", newOwner);
-            }
+//             if (newOwner) {
+//               const tx = await box.transferOwnership(newOwner);
+//               await tx.wait();
+//               console.log("Transferred ownership to : ", newOwner);
+//             }
             
-            console.log("Verifying contract");
+//             console.log("Verifying contract");
 
 
 
         
-            exec(`npx hardhat verify --contract ${path} --network ${defaultNetwork} ${implAddress}`, (error, stdout, stderr) => {
-            if (error) {
-                console.log(`error: ${error.message}`);
-                return;
-            }
-            if (stderr) {
-                console.log(`stderr: ${stderr}`);
-                return;
-            }
-            console.log(`stdout: ${stdout}`);
-            });
+//             exec(`npx hardhat verify --contract ${path} --network ${defaultNetwork} ${implAddress}`, (error, stdout, stderr) => {
+//             if (error) {
+//                 console.log(`error: ${error.message}`);
+//                 return;
+//             }
+//             if (stderr) {
+//                 console.log(`stderr: ${stderr}`);
+//                 return;
+//             }
+//             console.log(`stdout: ${stdout}`);
+//             });
         
-            return {proxy: box, impl: implAddress};
-        } catch (error) {
-            console.log(error);
-        }
+//             return {proxy: box, impl: implAddress};
+//         } catch (error) {
+//             console.log(error);
+//         }
 
-    }
+//     }
     
-  };
+//   };
 
 
 
-const deployTokenBeaconAndBeaconProxy = async (contractName, path, passContractOwner, _args = [], overrides1 = {}, overrides2 = {}, libraries = {}) => {
+const deployTokenBeaconAndBeaconProxy = async (beaconName, beaconPath, contractName, path, _args = [], overrides1 = {}, overrides2 = {}, libraries = {}) => {
     
     while (true) {
 
@@ -437,30 +445,20 @@ const deployTokenBeaconAndBeaconProxy = async (contractName, path, passContractO
             console.log(` 🛰  Deploying: ${contractName}`);
     
             const contractArgs = _args || [];
-        
-            const Box = await ethers.getContractFactory(contractName);
-        
-            const beacon = await upgrades.deployBeacon(Box, overrides1);
+
+            const implContract = await deploy(contractName, path, [], overrides1);
+            await implContract.deployed();
+            await implContract.__ERC1155OpenGlip_init(...contractArgs, overrides1);
+            console.log("Implementation deployed to:", implContract.address);
+
+            const beacon = await deploy(beaconName, beaconPath, [implContract.address], overrides1);
             await beacon.deployed();
-            const beaconImplAddress = await upgrades.beacon.getImplementationAddress(beacon.address);
+
+            const beaconImplAddress = implContract.address;
             console.log("Beacon deployed to:", beacon.address);
             console.log("Beacon implemented at:", beaconImplAddress );
             
-        
-            // const box = await upgrades.deployBeaconProxy(beacon, Box, contractArgs, overrides2);
-            // await box.deployed();
-            // console.log("Box deployed to:", box.address);
-
-            // await sleep(10000);
-
-            // console.log(await box.owner());
-
-            // console.log("Transferring ownership to backend owner account");
-            // console.log(passContractOwner);
-            // await box.transferOwnership(passContractOwner);
-
-            // console.log("New owner : ", await box.owner());
-        
+      
 
             const deployed = beacon;
         

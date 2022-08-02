@@ -1,4 +1,4 @@
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.7.6;
@@ -22,16 +22,16 @@ abstract contract ERC1271Validator is EIP712Upgradeable {
             signerFromSig = hash.recover(signature);
         }
 
-        console.log("Signature");
-        console.logBytes(signature);
-        console.log("Struct hash");
-        console.logBytes32(structHash);
-        console.logBytes32(_domainSeparatorV4());
-        console.log("Final hash");
-        console.logBytes32(hash);
-        console.log("Signer");
-        console.log(signer);
-        console.log(signerFromSig);
+        // console.log("Signature");
+        // console.logBytes(signature);
+        // console.log("Struct hash");
+        // console.logBytes32(structHash);
+        // console.logBytes32(_domainSeparatorV4());
+        // console.log("Final hash");
+        // console.logBytes32(hash);
+        // console.log("Signer");
+        // console.log(signer);
+        // console.log(signerFromSig);
 
         if  (signerFromSig != signer) {
             if (signer.isContract()) {

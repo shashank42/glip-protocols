@@ -12,9 +12,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 
 /*
       📡 This is where you configure your deploy configuration for 🏗 scaffold-eth
-
       check out `packages/scripts/deploy.js` to customize your deployment
-
       out of the box it will auto deploy anything in the `contracts` folder and named *.sol
       plus it will use *.args for constructor args
 */
@@ -38,18 +36,42 @@ function mnemonic() {
 module.exports = {
   defaultNetwork,
 
+  // zksolc: {
+  //   version: "0.1.0",
+  //   compilerSource: "docker",
+  //   settings: {
+  //     optimizer: {
+  //       enabled: true,
+  //     },
+  //     experimental: {
+  //       dockerImage: "matterlabs/zksolc",
+  //     },
+  //   },
+  // },
+  // zkSyncDeploy: {
+  //   zkSyncNetwork: "https://zksync2-testnet.zksync.dev",
+  //   ethNetwork: "goerli", // Can also be the RPC URL of the network (e.g. `https://goerli.infura.io/v3/<API_KEY>`)
+  // },
+
   // don't forget to set your provider like:
   // REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
   // (then your frontend will talk to your contracts on the live network!)
   // (you will need to restart the `yarn run start` dev server after editing the .env)
 
   networks: {
+    // hardhat: {
+    //   // zksync: true,
+    //   mining: {
+    //     auto: false,
+    //     interval: [3000, 6000]
+    //   }
+    // },
     localhost: {
       url: "http://localhost:8545",
       allowUnlimitedContractSize: true,
       gas: 8000000,
       blockGasLimit: 0x1fffffffffffff,
-      timeout: 1800000
+      timeout: 1800000,
       /*
         notice no mnemonic here? it will just use account 0 of the hardhat node to deploy
         (you can put in a mnemonic here to set the deployer locally)

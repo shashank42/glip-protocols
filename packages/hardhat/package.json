@@ -4,8 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "@nomiclabs/hardhat-etherscan": "^2.1.8",
-    "@openzeppelin/hardhat-upgrades": "^1.13.0",
+    "@nomiclabs/hardhat-etherscan": "^3.1.0",
+    "@openzeppelin/hardhat-upgrades": "^1.19.0",
     "eslint": "^7.5.0",
     "eslint-config-airbnb": "^18.2.0",
     "eslint-config-prettier": "^6.11.0",
@@ -13,6 +13,8 @@
     "eslint-plugin-prettier": "^3.1.4"
   },
   "dependencies": {
+    "@matterlabs/hardhat-zksync-deploy": "^0.3.6",
+    "@matterlabs/hardhat-zksync-solc": "^0.3.6",
     "@nomiclabs/hardhat-ethers": "^2.0.0",
     "@nomiclabs/hardhat-waffle": "^2.0.0",
     "@openzeppelin/contracts-upgradeable": "3.4.0",
@@ -31,7 +33,10 @@
     "hardhat": "^2.0.11",
     "node-watch": "^0.7.0",
     "qrcode-terminal": "^0.12.0",
-    "ramda": "^0.27.1"
+    "ramda": "^0.27.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.7.4",
+    "zksync-web3": "^0.7.9"
   },
   "scripts": {
     "chain": "hardhat node",
@@ -61,6 +66,7 @@
     "deploy-stack": "hardhat run scripts/12-deployStack.js",
     "deploy-pass": "hardhat run scripts/13-deployERC1155.js",
     "deploy-open": "hardhat run scripts/14-deployERC1155OpenGlip.js",
-    "deploy-new-stack": "hardhat run scripts/15-deployNewStack.js"
+    "deploy-new-stack": "hardhat run scripts/15-deployNewStack.js",
+    "deploy-no-upgrades": "hardhat run scripts/16-deployNewStackNoUpgradePlugin.js"
   }
 }

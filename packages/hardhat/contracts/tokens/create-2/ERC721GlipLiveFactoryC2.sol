@@ -4,7 +4,6 @@ pragma solidity 0.7.6;
 pragma abicoder v2;
 
 import "../meta-tokens/ERC721GlipLive.sol";
-import "./../@openzeppelin/contracts/proxy/UpgradeableBeacon.sol";
 import "./../@openzeppelin/contracts/proxy/BeaconProxy.sol";
 import "./../@openzeppelin/contracts/access/Ownable.sol";
 

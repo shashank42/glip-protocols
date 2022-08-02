@@ -191,7 +191,8 @@ abstract contract ERC1155LazyOpenGlip is
         address to, 
         uint256 amount
     ) external virtual override {
-        uint256 balance = balanceOf(from, data.tokenId);
+        uint256 balance;
+        if (from != address(0)) balance = balanceOf(from, data.tokenId);
         uint256 left = amount;
         if (balance != 0) {
             uint256 transfer = amount;
@@ -216,8 +217,10 @@ abstract contract ERC1155LazyOpenGlip is
         
         (address token, LibERC1155LazyMint.Mint1155Data memory data) = abi.decode( encoded, (address, LibERC1155LazyMint.Mint1155Data));
         require(token == address(this), "Wrong contracts");
-        uint256 balance = balanceOf(from, data.tokenId);
+        uint256 balance;
+        if (from != address(0)) balance = balanceOf(from, data.tokenId);
         uint256 left = amount;
+
         if (balance != 0) {
             uint256 transfer = amount;
             if (balance < amount) {
@@ -238,14 +241,17 @@ abstract contract ERC1155LazyOpenGlip is
         uint256 _amount
     ) internal virtual {
 
-        // Verify if message sender is approved address or owner
-        require(isApprovedForAll(data.creator, _msgSender()) || _msgSender() == data.creator, "Not approved");
-
         // Verify signer/minter
         address signer = verifyAssetAndSigner(data, _amount);
 
         // Verify if creator has allowed the minter
         bytes32 royaltySplitterBytes = IMinterUpgradeable(minter).getDetailsForRoyalty(address(this), data.creator, signer);
+
+
+        // Allow if creator signs and sends, OR, signer is an approved minter, and the msgSender is default approved or the signer themselves
+        require((_msgSender() == data.creator) || _isDefaultApproved(_msgSender()) || (_msgSender() == signer), "Not approved" );
+
+        require(_amount > 0, "amount incorrect");
 
         if (supply[data.tokenId] == 0) {
 

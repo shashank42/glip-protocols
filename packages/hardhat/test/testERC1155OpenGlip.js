@@ -15,6 +15,8 @@ use(solidity);
 
 describe("Test ERC1155 Open Glip Asset Contract", function () {
 
+    this.timeout(1000000) // all tests in this suite get 10 seconds before timeout
+
     let artifact;
     let AssetContract;
     let ERC20TransferProxy;
@@ -28,17 +30,23 @@ describe("Test ERC1155 Open Glip Asset Contract", function () {
     before(async function () {
         
         EIP712Forwarder = await (await (await ethers.getContractFactory('EIP712Forwarder')).deploy()).deployed();
+        console.log("H1");
         TransferProxy = await (await (await ethers.getContractFactory('TransferProxy')).deploy()).deployed();
         await TransferProxy.__TransferProxy_init();
+        console.log("H1");
         LazyTransferProxy = await (await (await ethers.getContractFactory('ERC1155GlipLazyMintTransferProxy')).deploy()).deployed();
         await LazyTransferProxy.__OperatorRole_init();
         ERC20TransferProxy = await (await (await ethers.getContractFactory('ERC20TransferProxy')).deploy()).deployed();
         await ERC20TransferProxy.__ERC20TransferProxy_init();
+        console.log("H1");
         let royaltyForwarder = await (await (await ethers.getContractFactory('RoyaltyForwarder')).deploy()).deployed();
         DefaultMinter = await (await (await ethers.getContractFactory('MinterUpgradeable')).deploy()).deployed();
         await DefaultMinter.__MinterUpgradable_init((await ethers.getSigners())[1].address, 0, 0, royaltyForwarder.address, EIP712Forwarder.address);
+        console.log("H1");
         await TransferProxy.addOperator((await ethers.getSigners())[2].address);
         await LazyTransferProxy.addOperator((await ethers.getSigners())[2].address);
+
+        console.log("H1");
 
         Exchange = await (await (await ethers.getContractFactory('Exchange')).deploy()).deployed();
         await Exchange.__Exchange_init(TransferProxy.address, ERC20TransferProxy.address, 100, "0xF1b6fceac6784a26360056973C41e0017DeE12e4", EIP712Forwarder.address);
@@ -49,8 +57,11 @@ describe("Test ERC1155 Open Glip Asset Contract", function () {
 
 
         await Exchange.setTransferProxy(id("ERC1155_LAZY"), LazyTransferProxy.address);
+
+        console.log("H2");
         
         artifact = await ethers.getContractFactory('ERC1155OpenGlip');
+
       });
 
 
@@ -66,11 +77,11 @@ describe("Test ERC1155 Open Glip Asset Contract", function () {
 
         });
 
-        it("Mints 1155 asset signed by minter and submitted!", async () => {
+        it("Mints 1155 asset signed by minter and submitted via minter!", async () => {
             
             const mintData = {
                 tokenId: 1, 
-                reserve: Asset(id("ETH"), "0x", 1), 
+                reserve: Asset(id("ETH"), "0x", 1),
                 supply: 1, 
                 creator: (await ethers.getSigners())[0].address, 
                 minter: (await ethers.getSigners())[1].address, 
@@ -81,6 +92,8 @@ describe("Test ERC1155 Open Glip Asset Contract", function () {
             const signature = await getSignature((await ethers.getSigners())[1], mintData.tokenId, mintData.reserve, mintData.supply, mintData.creator, mintData.minter, mintData.creators, mintData.royalty);
             mintData["signature"] = signature;
 
+            console.log(mintData);
+
 
             // https://ethereum.stackexchange.com/q/121525/97554
             const encodedMintData = ethers.utils.AbiCoder.prototype.encode(
@@ -88,11 +101,14 @@ describe("Test ERC1155 Open Glip Asset Contract", function () {
                 [AssetContract.address, mintData]
             );
 
+            console.log(encodedMintData);
+            console.log(AssetContract.address);
+
             // const data = await AssetContract.decodeLazyMintData(encodedMintData);
             // const signer = await AssetContract.verifyAssetAndSigner(mintData, 1);
-
-            await AssetContract.transferFromOrMintEncodedData(encodedMintData, (await ethers.getSigners())[0].address, (await ethers.getSigners())[3].address, 1);
-
+            const accounts = await ethers.getSigners();
+            await AssetContract.connect(accounts[1]).transferFromOrMintEncodedData(encodedMintData, (await ethers.getSigners())[0].address, (await ethers.getSigners())[3].address, 1);
+            console.log(encodedMintData, (await ethers.getSigners())[0].address, (await ethers.getSigners())[3].address, 1);
             expect(await AssetContract.balanceOf((await ethers.getSigners())[3].address, 1)).to.equal(1);
 
         });
@@ -101,6 +117,9 @@ describe("Test ERC1155 Open Glip Asset Contract", function () {
         it("erc20 <> minted erc1155", async () => {  
 
             const accounts = await ethers.getSigners();
+
+            console.log(ERC20TestCoin.address);
+            console.log(AssetContract.address);
 
             // Mint 100 ERC20 to account 4
             await ERC20TestCoin.mint(accounts[4].address, 20000);
@@ -177,7 +196,7 @@ describe("Test ERC1155 Open Glip Asset Contract", function () {
 
             // let encDataLeft = await Exchange.encodeOrderDataV1(orderDataV1);
             // console.log("LEFT encodeOrderDataV1");
-            const left = Order(accounts[4].address,Asset(id("ERC20"), enc(ERC20TestCoin.address), 20000), ZERO, Asset(id("ERC1155"), enc(AssetContract.address, 1), 1), 1, 0, 0,  id("V1"), encDataLeft);
+            const left = Order(accounts[4].address,Asset(id("ERC20"), enc(ERC20TestCoin.address), 10000), ZERO, Asset(id("ERC1155"), enc(AssetContract.address, 1), 1), 1, 0, 0,  id("V1"), encDataLeft);
 
             // console.log("LEFT ORDER CREATED");
             let signatureLeft = await signOrder(left, accounts[4], Exchange.address);
@@ -215,6 +234,10 @@ describe("Test ERC1155 Open Glip Asset Contract", function () {
         it("erc20 <> un-minted erc1155 token", async () => {
 
             // console.log("ERC20TestCoin.address : ", ERC20TestCoin.address);
+
+            console.log(ERC20TestCoin.address);
+            console.log(AssetContract.address);
+            console.log(Exchange.address);
 
             const accounts = await ethers.getSigners();
 
@@ -365,6 +388,12 @@ describe("Test ERC1155 Open Glip Asset Contract", function () {
 
         it("Mints 1155 asset signed by minter and transfer. Both tx submitted through forwarder!", async () => {
 
+
+
+            console.log(AssetContract.address);
+            console.log(Exchange.address);
+            console.log(EIP712Forwarder.address);
+
             const accounts = await ethers.getSigners();
             const mintData = {
                 tokenId: 1, 
@@ -429,7 +458,173 @@ describe("Test ERC1155 Open Glip Asset Contract", function () {
 
         });
 
+
+        it("minted erc1155 <> minted erc1155", async () => {  
+
+            const accounts = await ethers.getSigners();
+
+            console.log(ERC20TestCoin.address);
+
+            console.log("0");
+    
+            // Mint ERC1155 to account 3 - creator is 1, minter is 2
+            // Reserve is 20 ERC20 coins
+            const mintDataCoin = {
+                tokenId: 2, 
+                reserve: Asset(id("ERC20"), ERC20TestCoin.address, 20), 
+                supply: 1000000, 
+                creator: accounts[0].address, 
+                minter: accounts[1].address, 
+                creators: [{account: accounts[0].address, value: 10000}],
+                royalty: {account: accounts[0].address, value: 100},
+            };
+
+            console.log("1");
+    
+            const signatureCoin = await getSignature(accounts[1], mintDataCoin.tokenId, mintDataCoin.reserve, mintDataCoin.supply, mintDataCoin.creator, mintDataCoin.minter, mintDataCoin.creators, mintDataCoin.royalty);
+            mintDataCoin["signature"] = signatureCoin;
+            const encodedMintDataCoin = ethers.utils.AbiCoder.prototype.encode(
+                ['address', 'tuple(uint256 tokenId, tuple(tuple(bytes4 assetClass, bytes data) assetType, uint256 value) reserve, uint256 supply, address creator, address minter, tuple(address account, uint96 value)[] creators, tuple(address account, uint96 value) royalty, bytes signature) data'],
+                [AssetContract.address, mintDataCoin]
+            );
+
+            console.log("2");
+            const dataCoin = await AssetContract.decodeLazyMintData(encodedMintDataCoin);
+            const signerCoin = await AssetContract.verifyAssetAndSigner(mintDataCoin, 100000);
+
+            console.log("3");
+    
+            await AssetContract.transferFromOrMintEncodedData(encodedMintDataCoin, accounts[0].address, accounts[4].address, 100000);
+            expect(await AssetContract.balanceOf(accounts[4].address, 2)).to.equal(100000);
+    
+            console.log("4");
+            //////////////////////////
+    
+            // Mint ERC1155 to account 3 - creator is 1, minter is 2
+            // Reserve is 20 ERC20 coins
+            const mintData = {
+                tokenId: 1, 
+                reserve: Asset(id("ERC20"), ERC20TestCoin.address, 20), 
+                supply: 1, 
+                creator: accounts[0].address, 
+                minter: accounts[1].address, 
+                creators: [{account: accounts[0].address, value: 10000}],
+                royalty: {account: accounts[0].address, value: 100},
+            };
+
+            console.log("5");
+    
+            const signature = await getSignature(accounts[1], mintData.tokenId, mintData.reserve, mintData.supply, mintData.creator, mintData.minter, mintData.creators, mintData.royalty);
+            mintData["signature"] = signature;
+            const encodedMintData = ethers.utils.AbiCoder.prototype.encode(
+                ['address', 'tuple(uint256 tokenId, tuple(tuple(bytes4 assetClass, bytes data) assetType, uint256 value) reserve, uint256 supply, address creator, address minter, tuple(address account, uint96 value)[] creators, tuple(address account, uint96 value) royalty, bytes signature) data'],
+                [AssetContract.address, mintData]
+            );
+
+            console.log("6");
+            const data = await AssetContract.decodeLazyMintData(encodedMintData);
+            const signer = await AssetContract.verifyAssetAndSigner(mintData, 1);
+    
+            await AssetContract.transferFromOrMintEncodedData(encodedMintData, accounts[0].address, accounts[3].address, 1);
+            expect(await AssetContract.balanceOf(accounts[3].address, 1)).to.equal(1);
+
+            console.log("7");
+    
+            // console.log("MINT COMPLETE");
+            
+    
+            // Create order with make asset as 1 erc1155 asset and take asset as 30 ERC20 tokens
+    
+            let orderDataV1 = {
+                payouts: [{account: accounts[3].address, value: 10000}],
+                originFees: [{account: accounts[5].address, value: 200}, {account: accounts[6].address, value: 400}],
+                isMakeFill: false
+            };
+            // console.log("RIGHT STRUCTURE DONE");
+
+            console.log("8");
+    
+            console.log("orderDataV1 : ", orderDataV1);
+    
+            const encDataRight = ethers.utils.AbiCoder.prototype.encode(
+                ['tuple(tuple(address account, uint96 value)[] payouts, tuple(address account, uint96 value)[] originFees, bool isMakeFill) data'],
+                [orderDataV1]
+            );
+    
+    
+            // let encDataRight = await Exchange.encodeOrderDataV1(orderDataV1);
+            // console.log("RIGHT encodeOrderDataV1");
+            // console.log("DATA IS OK");
+            const right = Order(accounts[3].address, Asset(id("ERC1155"), enc(AssetContract.address, 1), 1), ZERO, Asset(id("ERC1155"), enc(AssetContract.address, 2), 50000), 1, 0, 0,  id("V1"), encDataRight);
+            // console.log("RIGHT ORDER CREATED");
+    
+            let signatureRight = await signOrder(right, accounts[3], Exchange.address);
+            // console.log("RIGHT SIGNATURE DONE");
+
+            console.log("9");
+    
+    
+            orderDataV1 = {
+                payouts: [{account: accounts[4].address, value: 10000}],
+                originFees: [{account: accounts[7].address, value: 100}, {account: accounts[8].address, value: 300}],
+                isMakeFill: 0
+            };
+    
+            // console.log("LEFT STRUCTURE DONE");
+            
+            const encDataLeft = ethers.utils.AbiCoder.prototype.encode(
+                ['tuple(tuple(address account, uint96 value)[] payouts, tuple(address account, uint96 value)[] originFees, bool isMakeFill) data'],
+                [orderDataV1]
+            );
+    
+            // let encDataLeft = await Exchange.encodeOrderDataV1(orderDataV1);
+            // console.log("LEFT encodeOrderDataV1");
+            const left = Order(accounts[4].address, Asset(id("ERC1155"), enc(AssetContract.address, 2), 50000), ZERO, Asset(id("ERC1155"), enc(AssetContract.address, 1), 1), 1, 0, 0,  id("V1"), encDataLeft);
+    
+            // console.log("LEFT ORDER CREATED");
+            let signatureLeft = await signOrder(left, accounts[4], Exchange.address);
+            // console.log("LEFT SIGNATURE DONE");
+    
+            // console.log()
+
+            console.log("10");
+    
+            // Create order with make asset as 30 ERC20 tokens and take asset as 1 erc1155 asset token
+            let tx = await Exchange.matchOrders(left, signatureLeft, right, signatureRight, { from: accounts[0].address });
+
+            console.log("11");
+    
+            // send to match order
+            expect(await AssetContract.balanceOf(accounts[3].address, 1)).to.equal(0);
+            expect(await AssetContract.balanceOf(accounts[4].address, 1)).to.equal(1);
+    
+            // expect(await ERC20TestCoin.balanceOf(accounts[3].address)).to.equal(9600);
+            expect(await AssetContract.balanceOf(accounts[4].address, 2)).to.equal(47500);
+    
+            console.log("Makers");
+            console.log((await AssetContract.balanceOf(accounts[3].address, 2)).toNumber());
+            console.log((await AssetContract.balanceOf(accounts[4].address, 2)).toNumber());
+
+            console.log("12");
+    
+            console.log("Right origin");
+            console.log((await AssetContract.balanceOf(accounts[5].address, 2)).toNumber());
+            console.log((await AssetContract.balanceOf(accounts[6].address, 2)).toNumber());
+    
+            console.log("Left origin");
+            console.log((await AssetContract.balanceOf(accounts[7].address, 2)).toNumber());
+            console.log((await AssetContract.balanceOf(accounts[8].address, 2)).toNumber());
+            console.log("13");
+    
+            console.log("Protocol fee")
+            console.log((await AssetContract.balanceOf("0xF1b6fceac6784a26360056973C41e0017DeE12e4", 2)).toNumber());
+    
+        });
+
     });
+
+
+    
 
     function getSignature(account, tokenId, reserve, supply, creator, minter, creators, royalty) {
         

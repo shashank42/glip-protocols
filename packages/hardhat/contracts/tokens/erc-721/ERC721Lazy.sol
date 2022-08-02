@@ -172,15 +172,15 @@ abstract contract ERC721Lazy is
 
     // -------------------- THE MINTER --------------------------- //
     function mintAndTransfer( LibERC721LazyMint.Mint721Data memory data, address to) internal virtual {
-        
-        // Verify if message sender is approved address or owner
-        require(_isDefaultApproved(_msgSender()) || _msgSender() == data.creator, "Not approved");
 
         // Verify signer/minter
         address signer = verifyAssetAndSigner(data);
 
         // Verify if creator has allowed the minter
         bytes32 royaltySplitterBytes = IMinterUpgradeable(minter).getDetailsForRoyalty(address(this), data.creator, signer);
+
+        // Allow if creator signs and sends, OR, signer is an approved minter, and the msgSender is default approved or the signer themselves
+        require((_msgSender() == data.creator) || _isDefaultApproved(_msgSender()) || (_msgSender() == signer), "Not approved" );
         
         
         if (signer == data.creator) {

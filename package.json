@@ -78,7 +78,9 @@
 
     "deploy-open": "yarn workspace @scaffold-eth/hardhat deploy-open",
 
-    "deploy-new-stack": "yarn workspace @scaffold-eth/hardhat deploy-new-stack"
+    "deploy-new-stack": "yarn workspace @scaffold-eth/hardhat deploy-new-stack",
+
+    "deploy-no-upgrades": "yarn workspace @scaffold-eth/hardhat deploy-no-upgrades"
     
   },
   "workspaces": {

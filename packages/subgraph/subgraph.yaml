@@ -6,9 +6,9 @@ dataSources:
     name: erc1155OpenGlipFactoryC2
     network: mumbai
     source:
-      address: "0x0405aA9fef3986fd56470107D38f2a554E1856fa"
+      address: "0xAa0Ca36521a75ba0842560Ebbf72474988aB8f60"
       abi: ERC1155OpenGlipFactoryC2
-      startBlock: 25688047
+      startBlock: 24325000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
